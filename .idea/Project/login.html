@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROAST Burger - Liity kanta-asiakkaaksi | Register</title>
+  <link rel="stylesheet" href="Roast.css">
+  <script src="index.js" type="module" defer></script>
+</head>
+<body class="register-body">
+
+<header class="register-header">
+  <a href="Roast.html" class="logo">ROAST</a>
+  <h1>Liity ROAST-yhteisöön</h1>
+  <p>Tilaa suosikkiburgerisi ennakkoon ja ohita jono.</p>
+  <p class="lang-switch"><em>Join the ROAST community to pre-order your favorite burgers and skip the line.</em></p>
+</header>
+
+<main class="register-main">
+  <section id="register-section">
+    <h2 class="section-title">Luo uusi tili / Create Account</h2>
+
+    <form id="register-form" action="Roast.html" method="GET">
+
+      <div class="form-group">
+        <label for="register-username">Käyttäjänimi / Username</label>
+        <input type="text" id="register-username" name="username">
+      </div>
+
+      <div class="form-group">
+        <label for="register-email">Sähköposti / Email</label>
+        <input type="email" id="register-email" name="email">
+      </div>
+
+      <div class="form-group">
+        <label for="register-password">Salasana / Password</label>
+        <input type="password" id="register-password" name="password">
+      </div>
+
+      <div class="form-group">
+        <label for="confirm-password">Vahvista salasana / Confirm Password</label>
+        <input type="password" id="confirm-password" name="confirm-password">
+      </div>
+
+      <div class="form-check">
+        <input type="checkbox" id="newsletter" name="newsletter" checked>
+        <label for="newsletter" class="check-label">Kyllä, haluan kuulla ROAST-tarjouksista ja uutisista!</label>
+      </div>
+
+      <button type="submit" id="register-submit" class="btn-primary">Rekisteröidy / Register</button>
+    </form>
+
+    <div class="form-footer">
+      <p>Onko sinulla jo tili? / Already have an account? <a href="login.html">Kirjaudu tästä / Login here</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="register-footer">
+  <p>&copy; 2026 ROAST Burger</p>
+</footer>
+
+</body>
+</html>
