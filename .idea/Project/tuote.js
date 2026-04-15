@@ -26,7 +26,7 @@ function lisaaMuokattuTuote() {
     const juoma = document.getElementById('drink-select').value;
     const lisatiedot = document.getElementById('lisatiedot').value;
 
-    // Yhdistetään juoma ja tekstikentän tiedot ostoskoria varten
+
     const extraInfo = `Juoma: ${juoma} | Huom: ${lisatiedot}`;
 
     lisaaKoriin(tuoteNimi, tiedot.hinta, maara, extraInfo);
