@@ -1,32 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roast - Ostoskori</title>
+    <link rel="stylesheet" href="Roast.css">
+    <script src="kassa.js" defer></script>
 </head>
-<body>
-<main class ="checkout-container">
-  <div class="checkout-grid">
-    <section class ="checkout-form login-card">
-      <h2>Toimitustiedot</h2>
-      <form>
-        <div class="form-group">
-          <label>Nimi</label>
-          <input type="text">
-        </div>
-        <div class="form-group">
-          <label>Puhelinnumero</label>
-          <input type="text">
-        </div>
-        <div class="metod-selector">
-          <button type ="button" class ="btn-primary">Nouto</button>
-          <button type ="button" class ="btn-primary">Kotiinkuljetus</button>
-        </div>
-      </form>
-    </section>
+<body class="cart-page-body">
 
-  </div>
-</main>
+<nav class="navbar">
+    <div class="logo"><a href="Roast.html" style="color:inherit; text-decoration:none;">ROAST</a></div>
+</nav>
+
+<section class="checkout-container">
+    <h1>Ostoskori</h1>
+
+    <div class="cart-table-header">
+        <span class="col-product">Tuote</span>
+        <span class="col-price">Hinta</span>
+        <span class="col-qty">Määrä</span>
+        <span class="col-subtotal">Välisumma</span>
+    </div>
+
+    <div id="kassa-lista">
+    </div>
+
+    <div class="total-section-box">
+        <div class="summary-line">
+            <span>Välisumma:</span>
+            <span id="valisumma">0.00€</span>
+        </div>
+        <div class="summary-line">
+            <span>Vero (14%):</span>
+            <span id="vero">0.00€</span>
+        </div>
+        <hr>
+        <div class="summary-line total">
+            <strong>Yhteensä verollinen:</strong>
+            <strong id="Loppusumma">0.00</strong><strong>€</strong>
+        </div>
+
+        <div class="checkout-buttons">
+            <button class="btn-cta" onclick="tilaus(event)">SIIRRY KASSALLE</button>
+            <a href="Menu.html" class="link-back">Palaa takaisin menuun</a>
+        </div>
+    </div>
+</section>
+
+<div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <h2>Vahvista Tilaus</h2>
+        <p>Haluatko varmasti lähettää tilauksen?</p>
+        <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeModal()">Peruuta</button>
+            <button class="btn-confirm" onclick="processOrder()">Vahvista</button>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>

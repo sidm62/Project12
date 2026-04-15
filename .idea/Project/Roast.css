@@ -1,5 +1,5 @@
 /* =========================================
-   1. MUUTTUJAT JA YLEISASETUKSET
+   1. MUUTTUJAT JA YLEISASETUKSET (KAIKKI SIVUT)
    ========================================= */
 :root {
     --primary: #f97316;       /* ROAST-oranssi */
@@ -31,7 +31,7 @@ body {
 }
 
 /* =========================================
-   2. NAVIGAATIO
+   2. NAVIGAATIO (KAIKKI SIVUT)
    ========================================= */
 .navbar {
     display: flex;
@@ -73,8 +73,29 @@ body {
     color: var(--primary);
 }
 
+/* Yleiset painikkeet */
+.btn, .btn-cta, .btn-primary, .btn-login {
+    display: inline-block;
+    background-color: var(--primary);
+    color: white;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn:hover, .btn-cta:hover, .btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);
+}
+
 /* =========================================
-   3. HERO-OSIO (ETUSIVU)
+   3. HERO-OSIO (ETUSIVU - Roast.html)
    ========================================= */
 .hero {
     text-align: center;
@@ -100,29 +121,8 @@ body {
     margin-bottom: 30px;
 }
 
-/* Yleiset painikkeet */
-.btn, .btn-cta, .btn-primary, .btn-login {
-    display: inline-block;
-    background-color: var(--primary);
-    color: white;
-    padding: 12px 30px;
-    text-decoration: none;
-    border-radius: 50px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn:hover, .btn-cta:hover, .btn-primary:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);
-}
-
 /* =========================================
-   4. MENU-SIVU (GRID JA KORTIT)
+   4. MENU-SIVU (Menu.html)
    ========================================= */
 .menu-section {
     padding: 40px 8%;
@@ -130,51 +130,61 @@ body {
     margin: 0 auto;
 }
 
-.menu-container h2 {
-    text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 30px;
-    text-transform: uppercase;
-}
-
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    padding: 20px;
 }
 
 .menu-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: 1.5rem;
-    padding: 25px;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
     transition: 0.3s ease;
+    color: #333;
+    position: relative;
+    overflow: hidden;
 }
 
-.menu-card:hover {
-    transform: translateY(-10px);
-    border-color: var(--primary);
+.menu-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #10b981;
+}
+
+.menu-card img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 15px;
 }
 
 .menu-card h3 {
-    margin-bottom: 10px;
-    color: var(--primary);
+    color: #ff0000;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    font-weight: bold;
 }
 
 .price {
     font-size: 1.5rem;
-    font-weight: 800;
-    margin-top: 15px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #000;
     display: block;
-}
-
-/* Allergeenitagit */
-.dietary-tags {
-    display: flex;
-    gap: 8px;
-    margin: 10px 0;
 }
 
 .tag {
@@ -193,8 +203,185 @@ body {
 .tag-g { color: var(--tag-g); border-color: var(--tag-g); }
 .tag-v { color: var(--tag-v); border-color: var(--tag-v); }
 
+/* Menu-sivun sivupalkki (Star Pizza tyyli) */
+.menu-container-layout {
+    display: flex;
+    gap: 20px;
+    padding: 30px 8%;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+.menu-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    height: fit-content;
+    overflow: hidden;
+}
+
+.category-list {
+    list-style: none;
+    padding: 0;
+}
+
+.category-list li {
+    padding: 12px 20px;
+    border-bottom: 1px dashed #eee;
+    color: #002d5b;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.category-list li:hover, .category-list li.active {
+    background-color: #f8f9fa;
+    color: var(--primary);
+}
+
 /* =========================================
-   5. INFO- JA FOOTER-OSIOT (ALHAALLA)
+   5. TUOTESIVU (Tuote.html)
+   ========================================= */
+.product-page-container {
+    background-color: var(--card-bg);
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 50px;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+}
+
+.info-row {
+    border: 1px solid var(--border);
+    padding: 15px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.selection-box select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--dark-bg);
+    color: var(--text-main);
+}
+
+.btn-add-to-cart {
+    background-color: var(--primary) !important;
+    color: white !important;
+    border: none;
+    padding: 18px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+/* =========================================
+   6. OSTOSKORI & KASSA (Tilaus.html / VPD-TYYLI)
+   ========================================= */
+.cart-table-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+    padding: 15px;
+    background: rgba(255,255,255,0.05);
+    font-weight: bold;
+    color: var(--primary);
+    border-bottom: 2px solid var(--border);
+}
+
+.cart-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+    align-items: center;
+    padding: 20px 15px;
+    border-bottom: 1px solid var(--border);
+}
+
+.cart-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 15px;
+}
+
+.total-section-box {
+    margin-top: 30px;
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 8px;
+    max-width: 400px;
+    margin-left: auto;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.summary-line.total {
+    font-size: 1.4rem;
+    color: var(--primary);
+    margin-top: 15px;
+}
+
+/* =========================================
+   7. KIRJAUTUMINEN & MODAALIT
+   ========================================= */
+.login-card {
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid var(--border);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    background: var(--dark-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: white;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+}
+
+/* =========================================
+   8. INFO-FOOTER & RESPONSIIVISUUS
    ========================================= */
 .info-container {
     display: flex;
@@ -207,119 +394,10 @@ body {
     margin-top: 50px;
 }
 
-.info-item {
-    text-align: center;
-    min-width: 200px;
-}
-
-.info-item h3 {
-    font-size: 1.4rem;
-    color: var(--primary);
-    margin-bottom: 15px;
-    text-transform: uppercase;
-}
-
-.footer-bottom {
-    text-align: center;
-    padding: 20px;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-}
-/* =========================================
-   6. AUTH / LOGIN / REGISTER
-   ========================================= */
-.register-body {
-    background-color: var(--card-bg);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-.register-main {
-    flex: 1;                 /* Täyttää kaiken vapaan tilan headerin ja footerin välissä */
-    display: flex;
-    justify-content: center; /* Keskittää vaakasuunnassa */
-    align-items: center;     /* Keskittää pystysuunnassa */
-    padding: 20px;
-}
-
-#register-section {
-    background-color: var(--card-bg);
-    padding: 40px;
-    border-radius: 20px;
-    width: 100%;
-    max-width: 450px;        /* Estää laatikkoa venymästä liian leveäksi */
-    border: 1px solid var(--border);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    text-align: center;      /* Keskittää tekstit laatikon sisällä */
-}
-
-
-
-
-
-.auth-container {
-
-
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    min-height: 100vh;
-    padding: 20px;
-}
-
-
-.login-card, #register-section {
-    background: var(--card-bg);
-    padding: 40px;
-    border-radius: 20px;
-    width: 100%;
-    max-width: 450px;
-    border: 1px solid var(--border);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-}
-
-.form-group {
-    margin-bottom: 20px;
-    text-align: left;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--text-muted);
-}
-
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    background: var(--dark-bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: white;
-    font-size: 1rem;
-}
-
-.form-group input:focus {
-    border-color: var(--primary);
-    outline: none;
-}
-
-/* =========================================
-   7. RESPONSIIVISUUS
-   ========================================= */
-@media (max-width: 768px) {
-    .nav-links {
-        display: none; /* Voit lisätä mobiilivalikon myöhemmin */
-    }
-
-    .info-container {
+@media (max-width: 800px) {
+    .menu-container-layout, .product-page-container {
         flex-direction: column;
-        gap: 30px;
+        grid-template-columns: 1fr;
     }
-
-    .hero h1 {
-        font-size: 2.5rem;
-    }
+    .nav-links { gap: 10px; }
 }
-.

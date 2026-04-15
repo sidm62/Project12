@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ROAST - Menu</title>
     <link rel="stylesheet" href="Roast.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="index.js" defer></script>
 </head>
 <body>
@@ -18,47 +19,58 @@
     </ul>
 </nav>
 
-    <div class="menu-grid">
-        <div class="menu-card">
-            <h3>Classic Burger</h3>
-            <p>Juustoa, salaattia, tomaattia ja majoneesia.</p>
-            <div class="dietary-tags">
-                <span class="tag tag-l">L</span>
-            </div>
-            <div class="price-row">
-                <span class="price">8.99€</span>
-                <button class="add-to-cart"></button>
-            </div>
-        </div>
+<div class="menu-container-layout">
 
-        <div class="menu-card highlight">
-            <span class="badge">Suosittu</span>
-            <h3>Roast Burger</h3>
-            <p>Erikoisburger: karamellisoitua sipulia, pekonia ja BBQ-kastiketta.</p>
-            <div class="dietary-tags">
-                <span class="tag tag-l">L</span>
-                <span class="tag tag-g">G</span>
-            </div>
-            <div class="price-row">
-                <span class="price">10.99€</span>
-                <button class="add-to-cart">  </button>
-            </div>
-        </div>
+    <aside class="menu-sidebar">
+        <div class="sidebar-header">Ruokamenu</div>
+        <ul class="category-list">
+            <li class="active" onclick="suodata('kaikki')">KAIKKI <span>12</span></li>
+            <li onclick="suodata('burgerit')">BURGERIT <span>3</span></li>
+            <li onclick="suodata('juomat')">JUOMAT <span>4</span></li>
+            <li onclick="suodata('lisukkeet')">LISUKKEET <span>3</span></li>
+            <li onclick="suodata('jalkiruoat')">JÄLKIRUOAT <span>2</span></li>
+        </ul>
+    </aside>
 
-        <div class="menu-card">
-            <h3>Green Roast</h3>
-            <p>Kasvisvaihtoehto talon omalla kasvispihvillä ja cheddarilla.</p>
-            <div class="dietary-tags">
-                <span class="tag tag-v">V</span>
-                <span class="tag tag-l">L</span>
+    <section class="menu-content">
+        <div class="menu-grid">
+
+            <div class="menu-card burgerit">
+                <h3>Classic Burger</h3>
+                <p>Juustoa, salaattia, tomaattia ja majoneesia.</p>
+                <div class="dietary-tags"><span class="tag tag-l">L</span></div>
+                <div class="price">8.99€</div>
+                <div class="button-group">
+                    <button class="btn-buy" onclick="window.location.href='Tuote.html?nimi=Classic Burger'">Muokkaa</button>
+                    <button class="btn-add" onclick="lisaaKoriin('Classic Burger', 8.99)">Lisää</button>
+                </div>
             </div>
-            <div class="price-row">
-                <span class="price">10.59€</span>
-                <button class="add-to-cart">Lisää +</button>
+
+            <div class="menu-card juomat">
+                <h3>Coca-Cola 0,33L</h3>
+                <p>Kylmä virvoitusjuoma.</p>
+                <div class="price">2.50€</div>
+                <div class="button-group">
+                    <button class="btn-add" onclick="lisaaKoriin('Coca-Cola', 2.50)" style="width: 100%;">
+                        <i class="fas fa-cart-plus"></i> Lisää koriin
+                    </button>
+                </div>
             </div>
+
+            <div class="menu-card lisukkeet">
+                <h3>Ranskalaiset</h3>
+                <p>Rapeat maalaisranskalaiset.</p>
+                <div class="price">4.00€</div>
+                <div class="button-group">
+                    <button class="btn-add" onclick="lisaaKoriin('Ranskalaiset', 4.00)" style="width: 100%;">
+                        <i class="fas fa-cart-plus"></i> Lisää koriin
+                    </button>
+                </div>
+            </div>
+
         </div>
-    </div>
-</section>
+    </section>
+</div>
 
 <div id="cart-status" class="cart-summary">
     <span>Kori: <span id="cart-count">0</span> tuotetta</span>
