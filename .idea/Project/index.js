@@ -1,47 +1,55 @@
 let ostoskori = JSON.parse(localStorage.getItem('ostoskori')) || [];
-
 updateCart();
 
-document.querySelectorAll('.add-to-cart').forEach(button => {
-    button.addEventListener('click', (e) => {
-        const card = e.target.closest('.menu-card');
-        const name = card.querySelector('h3').innerText;
+function lisaaKoriin(name, price) {
+    const modal = document.getElementById("menuModal");
+    const title = document.getElementById("modal-title");
+    const text = document.getElementById("modal-text");
+    const footer = document.getElementById("modal-footer");
+    const icon = document.getElementById("modal-icon");
 
 
-        const vastaus = confirm(`Are you sure you want to add ${name}`);
-        if (vastaus) {
+    icon.innerHTML = "🍔";
+    title.innerText = "Lisätäänkö koriin?";
+    text.innerText = `Haluatko lisätä tuotteen "${name}" ostoskoriin?`;
 
-            const priceText = card.querySelector('.price').innerText;
-            const price = parseFloat(priceText.replace(/[^\d.]/g, '').replace(',', '.'));
-            addToCart(name, price);
 
-        alert(`${name} added to cart!`);
-    } else {
-            console.log(`lisäys peruutettiin!`);
-        }
-    });
-});
+    footer.innerHTML = `
+        <button class="btn-cancel" onclick="closeMenuModal()">Peruuta</button>
+        <button class="btn-confirm" id="confirm-add-action">Lisää</button>
+    `;
 
-    function addToCart(name, price) {
+    modal.style.display = "flex";
+
+
+    document.getElementById("confirm-add-action").onclick = function() {
+
         const existingProduct = ostoskori.find(item => item.name === name);
-
         if (existingProduct) {
             existingProduct.amount += 1;
         } else {
-            ostoskori.push({
-                name: name,
-                price: price,
-                amount: 1
-            });
+            ostoskori.push({ name: name, price: price, amount: 1, extra: "" });
         }
+
         localStorage.setItem('ostoskori', JSON.stringify(ostoskori));
         updateCart();
-        console.log(`${name} added to cart`);
+
+
+        icon.innerHTML = "✅";
+        title.innerText = "Onnistui!";
+        text.innerText = `${name} on nyt lisätty ostoskoriin.`;
+        footer.innerHTML = `<button class="btn-confirm" onclick="closeMenuModal()" style="width: 100%;">Selvä</button>`;
+    };
+}
+
+function closeMenuModal() {
+    document.getElementById("menuModal").style.display = "none";
+}
+
+function updateCart() {
+    const count = document.getElementById('cart-count');
+    if (count) {
+        const totalItems = ostoskori.reduce((sum, item) => sum + item.amount, 0);
+        count.innerText = totalItems;
     }
-    function updateCart() {
-        const count = document.getElementById('cart-count');
-        if (count) {
-            const totalItems = ostoskori.reduce((sum, item) => sum + item.amount, 0);
-            count.innerText = totalItems;
-        }
-    }
+}
