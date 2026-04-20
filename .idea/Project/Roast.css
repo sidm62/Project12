@@ -619,3 +619,66 @@ input[type="submit"]:hover {
     color: white;
     box-shadow: 0 5px 15px rgba(255, 75, 43, 0.3);
 }
+/* --- ABOUT SIVUN RAKENNE --- */
+.about-section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 20px;
+    color: white; /* Pidetään teksti vaaleana tummalla pohjalla */
+}
+
+.about-hero {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.about-hero h1 {
+    font-size: 3rem;
+    color: #ff9800; /* Roast-oranssi */
+    margin-bottom: 10px;
+}
+
+/* Kolme korttia vierekkäin */
+.about-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-bottom: 80px;
+}
+
+.roast-card {
+    background: rgba(255, 255, 255, 0.05); /* Erittäin hienovaraisen tumma tausta */
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    border: 1px solid rgba(255, 152, 0, 0.2); /* Ohut oranssi reunus */
+    transition: 0.3s;
+}
+
+.roast-card:hover {
+    background: rgba(255, 152, 0, 0.1); /* Korostuu hieman hiirellä */
+    transform: translateY(-5px);
+}
+
+.roast-card h3 {
+    color: #ff9800;
+    margin: 15px 0;
+    font-size: 1.5rem;
+}
+
+.roast-card .card-icon {
+    font-size: 3rem;
+}
+
+/* Alaosan teksti */
+.about-story {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    line-height: 1.8;
+}
+
+.about-story h3 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
