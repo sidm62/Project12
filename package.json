@@ -1,5 +1,5 @@
 {
-  "name": "Project2",
+  "name": "Project12",
   "version": "1.0.0",
   "description": "",
   "main": ".idea/Project/index.js",
@@ -8,7 +8,10 @@
   },
   "private": true,
   "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "epress": "^0.0.1-security",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "mysql2": "^3.22.1"
   }
 }
