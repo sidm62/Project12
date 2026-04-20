@@ -53,3 +53,21 @@ function updateCart() {
         count.innerText = totalItems;
     }
 }
+
+function suodata(kategoria) {
+    const kortit = document.querySelectorAll('.menu-card');
+    kortit.forEach(kortti => {
+        if (kategoria === 'kaikki' || kortti.classList.contains(kategoria)) {
+            kortti.style.display = "flex";
+        } else {
+            kortti.style.display = "none";
+        }
+    });
+    const kategoriaLinkit = document.querySelectorAll('.category-list li');
+    kategoriaLinkit.forEach(li => {
+        li.classList.remove('active');
+        if (li.getAttribute('onclick').includes(`'${kategoria}'`)) {
+            li.classList.add('active');
+        };
+    });
+};
