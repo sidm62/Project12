@@ -71,3 +71,27 @@ function suodata(kategoria) {
         };
     });
 };
+function updatenNavBar() {
+    const authBtn = document.getElementById('main-auth-btn');
+    const savedUser = localStorage.getItem('user');
+
+    console.log("Tarkistaaan käyttäjä" + savedUser);
+
+    if (savedUser && authBtn) {
+        try {
+            const user = JSON.parse(savedUser);
+            authBtn.textContent = user.username;
+            authBtn.href = "Profile.html";
+            console.log("Nimi vaihdettu onnistui!");
+
+            if (registerLink) {
+                registerLink.style.display = "none";
+            }
+
+        } catch (error) {
+            console.log("Virhe nimen vaihtamisessa: " + error);
+        }
+
+    }
+}
+window.onload = updatenNavBar;

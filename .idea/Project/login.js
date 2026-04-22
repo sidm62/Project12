@@ -33,9 +33,3 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
-
-
-
-
-
-

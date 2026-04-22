@@ -682,3 +682,9 @@ input[type="submit"]:hover {
     font-size: 2rem;
     margin-bottom: 20px;
 }
+
+#main-auth-btn {
+    text-transform: capitalize;
+    font-weight: bold;
+    padding: 10px 20px;
+}
