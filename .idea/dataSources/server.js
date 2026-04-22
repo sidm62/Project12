@@ -7,10 +7,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Tämä kertoo, mistä kansiosta HTML-sivut löytyvät
-app.use(express.static(__dirname)); 
+// Tarjoillaan staattiset tiedostot (HTML, CSS, JS)
+app.use(express.static(__dirname));
 
-// Yhdistetään tietokantaan
+// Tietokantayhteys (Yksi pooli koko sovellukselle)
 const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -18,52 +18,87 @@ const db = mysql.createPool({
     database: process.env.DB_NAME
 });
 
-// Reitti, joka hakee ruoat tietokannasta
-app.get('/api/products', (req, res) => {
-    db.query('SELECT * FROM Products', (err, results) => {
+// --- AUTH-REITIT ---
+
+// Rekisteröityminen
+app.post('/api/auth/register', (req, res) => {
+    const { username, email, password } = req.body;
+    const sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+
+    db.query(sql, [username, email, password], (err, result) => {
         if (err) {
             console.error(err);
-            res.status(500).json({ error: 'Tietokantavirhe' });
+            return res.status(500).json({ error: "Virhe rekisteröinnissä" });
+        }
+        res.status(201).json({ message: "Rekisteröityminen onnistui" });
+    });
+});
+
+// Kirjautuminen
+app.post('/api/auth/login', (req, res) => {
+    const { username, password } = req.body;
+    const sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+
+    db.query(sql, [username, password], (err, result) => {
+        if (err) return res.status(500).json({ error: err });
+
+        if (result.length > 0) {
+            res.json({ message: "Kirjautuminen onnistui", user: result[0] });
         } else {
-            res.json(results);
+            res.status(401).json({ message: "Väärä tunnus tai salasana" });
         }
     });
 });
 
-const PORT = 3000;
-// --- UUSI KOODI: Tilauksen tallennus historiaan (Orders ja Order_Items) ---
-app.post('/api/orders', (req, res) => {
-    // Otetaan vastaan kuka tilasi ja mitä ostoskorissa oli
-    const { userId, items, total } = req.body;
-    
-    // 1. Luodaan uusi tilaus Orders-tauluun (tallentaa ajan, summan ja käyttäjän)
-    db.query('INSERT INTO Orders (user_id, total_price) VALUES (?, ?)', [userId, total], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: 'Virhe tilauksen luonnissa' });
+// Käyttäjätietojen haku
+app.get('/api/auth/user/:id', (req, res) => {
+    const sql = "SELECT id, username, email, role FROM users WHERE id = ?";
+    db.query(sql, [req.params.id], (err, result) => {
+        if (err) return res.status(500).json({ error: err });
+        if (result.length > 0) {
+            res.json(result[0]);
+        } else {
+            res.status(404).json({ message: "Käyttäjää ei löytynyt" });
         }
-        
-        const orderId = result.insertId; // Otetaan talteen uuden tilauksen numero
-        
-        // 2. Valmistellaan ostoskorin tuotteet tietokantaa varten
-        // HUOM: Vaatii, että frontend lähettää tuotteen ID:n (productId)
+    });
+});
+
+// Salasanan vaihto
+app.put('/api/auth/change-password', (req, res) => {
+    const { userId, newPassword } = req.body;
+    const sql = "UPDATE users SET password = ? WHERE id = ?";
+
+    db.query(sql, [newPassword, userId], (err, result) => {
+        if (err) return res.status(500).json({ error: err });
+        res.json({ message: "Salasanan vaihto onnistui" });
+    });
+});
+
+// --- KAUPAN REITIT (Tuotteet ja Tilaukset) ---
+
+app.get('/api/products', (req, res) => {
+    db.query('SELECT * FROM Products', (err, results) => {
+        if (err) return res.status(500).json({ error: 'Tietokantavirhe' });
+        res.json(results);
+    });
+});
+
+app.post('/api/orders', (req, res) => {
+    const { userId, items, total } = req.body;
+    db.query('INSERT INTO Orders (user_id, total_price) VALUES (?, ?)', [userId, total], (err, result) => {
+        if (err) return res.status(500).json({ error: 'Virhe tilauksessa' });
+
+        const orderId = result.insertId;
         const orderItemsData = items.map(item => [orderId, item.productId, item.amount, item.price]);
-        
-        // 3. Tallennetaan kaikki korin tuotteet Order_Items -tauluun
+
         db.query('INSERT INTO Order_Items (order_id, product_id, quantity, price_at_purchase) VALUES ?', [orderItemsData], (err) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).json({ error: 'Virhe tilausrivien luonnissa' });
-            }
-            res.json({ message: "Tilaus tallennettu historiaan onnistuneesti!" });
+            if (err) return res.status(500).json({ error: 'Virhe tilausriveissä' });
+            res.json({ message: "Tilaus onnistui!" });
         });
     });
 });
-// --- UUSI KOODI: Haetaan asiakkaan tilaushistoria "Tilaa uudelleen" -nappia varten ---
-app.get('/api/orders/:userId', (req, res) => {
-    const userId = req.params.userId;
 
-    // Tämä SQL-taikatemppu (JOIN) hakee yhdellä kertaa sekä tilauksen tiedot että sen sisällä olevat ruoat!
+app.get('/api/orders/:userId', (req, res) => {
     const sql = `
         SELECT o.id AS orderId, o.order_date, o.total_price, 
                oi.product_id, oi.quantity, p.name, p.price
@@ -73,15 +108,15 @@ app.get('/api/orders/:userId', (req, res) => {
         WHERE o.user_id = ?
         ORDER BY o.order_date DESC
     `;
-
-    db.query(sql, [userId], (err, results) => {
-        if (err) {
-            console.error('Virhe historian haussa:', err);
-            return res.status(500).json({ error: 'Virhe historian haussa' });
-        }
-        res.json(results); // Lähetetään asiakkaan koko tilaushistoria selaimelle
+    db.query(sql, [req.params.userId], (err, results) => {
+        if (err) return res.status(500).json({ error: 'Virhe historian haussa' });
+        res.json(results);
     });
 });
+
+// Käynnistys
+const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`Palvelin käynnissä: http://localhost:${PORT}`);
+    console.log(`\n🚀 ROAST-palvelin rullaa portissa ${PORT}`);
+    console.log(`Kirjautuminen: http://localhost:${PORT}/api/auth/login`);
 });
