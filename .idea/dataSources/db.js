@@ -21,7 +21,7 @@ db.connect((err) => {
     if (err) {
         console.error('Tietokantavirhe: ' + err.message);
     } else {
-        console.log('✅ Yhteys tietokantaan onnistui');
+        console.log(' Yhteys tietokantaan onnistui');
     }
 });
 
