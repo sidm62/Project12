@@ -688,3 +688,126 @@ input[type="submit"]:hover {
     font-weight: bold;
     padding: 10px 20px;
 }
+/* --- MODERNI TUOTELISTAUS --- */
+.category-title {
+    font-size: 28px;
+    margin: 40px 0 20px 0;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+    color: #fff; 
+}
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 20px;
+}
+.product-card {
+    background: #1a1a1a; 
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    transition: 0.2s;
+}
+.product-card:hover {
+    border-color: #ff6b00; 
+}
+.product-info {
+    flex: 1;
+    padding-right: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+.product-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    color: #ff6b00; 
+}
+.product-info p {
+    margin: 0 0 15px 0;
+    color: #aaa;
+    font-size: 14px;
+}
+.product-price {
+    font-weight: bold;
+    font-size: 16px;
+    color: #fff;
+    margin-top: auto;
+}
+.product-image-container {
+    width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.product-image {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: #fff; 
+}
+.btn-add-product {
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-add-product:hover {
+    background: #ff6b00;
+}
+/* --- MODERNI VAAKASUORA VALIKKO (STICKY) --- */
+.category-nav-sticky {
+    position: sticky;
+    top: 0; /* Liimaa valikon kattoon */
+    background: #0B0E14; /* Teidän sivun tumma taustaväri */
+    z-index: 1000; /* Pitää valikon aina muiden päällä kun rullataan */
+    padding: 15px 20px;
+    border-bottom: 1px solid #333;
+}
+.category-list-horizontal {
+    display: flex; /* TÄMÄ tekee valikosta vaakasuoran! */
+    list-style: none; /* TÄMÄ poistaa ne rumat pallurat! */
+    padding: 0;
+    margin: 0;
+    gap: 30px;
+    justify-content: center; /* Keskittää tekstit nätisti */
+    overflow-x: auto; 
+}
+.category-list-horizontal li {
+    color: #aaa;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    padding-bottom: 5px;
+    border-bottom: 3px solid transparent;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+.category-list-horizontal li:hover {
+    color: #fff;
+}
+.category-list-horizontal li.active {
+    color: #ff6b00; /* Teidän oranssi brändiväri aktiiviseen kohtaan */
+    border-bottom: 3px solid #ff6b00;
+}
+.menu-container-layout {
+    display: block !important; /* Rikkoo vanhan kahteen jaetun asettelun */
+    width: 100%;
+}
+.menu-content-full {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
