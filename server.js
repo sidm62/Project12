@@ -77,36 +77,67 @@ app.put('/api/auth/change-password', (req, res) => {
 // --- KAUPAN REITIT (Tuotteet ja Tilaukset) ---
 
 app.get('/api/products', (req, res) => {
-    db.query('SELECT * FROM Products', (err, results) => {
-        if (err) return res.status(500).json({ error: 'Tietokantavirhe' });
+    db.query('SELECT * FROM products', (err, results) => {
+        if (err) {
+            console.error("❌ SQL-VIRHE:", err); // Tämä näkyy WebStormissa
+            // Palautetaan tyhjä lista [] ja virheviesti
+            return res.status(500).json({
+                viesti: "Tietokantavirhe",
+                details: err.message
+            });
+        }
         res.json(results);
     });
 });
 
 app.post('/api/orders', (req, res) => {
-    const { userId, items, total } = req.body;
-    db.query('INSERT INTO Orders (user_id, total_price) VALUES (?, ?)', [userId, total], (err, result) => {
-        if (err) return res.status(500).json({ error: 'Virhe tilauksessa' });
+    // Otetaan vastaan frontista tulevat kentät
+    const { userId, total_price, tuotteet } = req.body;
+
+    // TÄRKEÄ: Katso WebStormin terminaaliin, kun painat nappia!
+    console.log("Datan tarkistus:", { userId, total_price, tuotteet });
+
+    if (!tuotteet || !Array.isArray(tuotteet)) {
+        return res.status(400).json({ error: "Tuotteet puuttuvat tai ne ovat väärässä muodossa" });
+    }
+
+    const sqlOrder = "INSERT INTO orders (user_id, total_price) VALUES (?, ?)";
+    db.query(sqlOrder, [userId, total_price], (err, result) => {
+        if (err) {
+            console.error("Orders-taulun virhe:", err.message);
+            return res.status(500).json({ error: err.message });
+        }
 
         const orderId = result.insertId;
-        const orderItemsData = items.map(item => [orderId, item.productId, item.amount, item.price]);
 
-        db.query('INSERT INTO Order_Items (order_id, product_id, quantity, price_at_purchase) VALUES ?', [orderItemsData], (err) => {
-            if (err) return res.status(500).json({ error: 'Virhe tilausriveissä' });
-            res.json({ message: "Tilaus onnistui!" });
+        // Luodaan data order_items-taululle (järjestys: order_id, product_id, quantity, unit_price)
+        const orderItemsData = tuotteet.map(item => [
+            orderId,
+            item.id,      // Varmista että frontti lähettää 'id'
+            item.amount,  // Varmista että frontti lähettää 'amount'
+            item.price    // Varmista että frontti lähettää 'price'
+        ]);
+
+        const sqlItems = "INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES ?";
+        db.query(sqlItems, [orderItemsData], (err) => {
+            if (err) {
+                console.error("Order_items-taulun virhe:", err.message);
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ message: "Tilaus onnistui!", orderId: orderId });
         });
     });
 });
 
 app.get('/api/orders/:userId', (req, res) => {
     const sql = `
-        SELECT o.id AS orderId, o.order_date, o.total_price, 
+        SELECT o.id AS orderId, o.created_at, o.total_price, 
                oi.product_id, oi.quantity, p.name, p.price
-        FROM Orders o
-        JOIN Order_Items oi ON o.id = oi.order_id
-        JOIN Products p ON oi.product_id = p.id
+        FROM orders o
+        JOIN order_Items oi ON o.id = oi.order_id
+        JOIN products p ON oi.product_id = p.id
         WHERE o.user_id = ?
-        ORDER BY o.order_date DESC
+        ORDER BY o.created_at DESC
     `;
     db.query(sql, [req.params.userId], (err, results) => {
         if (err) return res.status(500).json({ error: 'Virhe historian haussa' });

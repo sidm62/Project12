@@ -1,7 +1,7 @@
 let ostoskori = JSON.parse(localStorage.getItem('ostoskori')) || [];
 updateCart();
 
-function lisaaKoriin(name, price) {
+function lisaaKoriin(id, name, price) {
     const modal = document.getElementById("menuModal");
     const title = document.getElementById("modal-title");
     const text = document.getElementById("modal-text");
@@ -28,7 +28,7 @@ function lisaaKoriin(name, price) {
         if (existingProduct) {
             existingProduct.amount += 1;
         } else {
-            ostoskori.push({ name: name, price: price, amount: 1, extra: "" });
+            ostoskori.push({ id: id, name: name, price: price, amount: 1, extra: "" });
         }
 
         localStorage.setItem('ostoskori', JSON.stringify(ostoskori));
@@ -52,24 +52,6 @@ function updateCart() {
         const totalItems = ostoskori.reduce((sum, item) => sum + item.amount, 0);
         count.innerText = totalItems;
     }
-}
-
-function suodata(kategoria) {
-    const kortit = document.querySelectorAll('.menu-card');
-    kortit.forEach(kortti => {
-        if (kategoria === 'kaikki' || kortti.classList.contains(kategoria)) {
-            kortti.style.display = "flex";
-        } else {
-            kortti.style.display = "none";
-        }
-    });
-    const kategoriaLinkit = document.querySelectorAll('.category-list li');
-    kategoriaLinkit.forEach(li => {
-        li.classList.remove('active');
-        if (li.getAttribute('onclick').includes(`'${kategoria}'`)) {
-            li.classList.add('active');
-        };
-    });
 };
 
 function updatenNavBar() {
@@ -150,7 +132,7 @@ async function haeRuoatTietokannasta() {
                         </div>
                         <div class="product-image-container">
                             ${kuvaHTML}
-                            <button class="btn-add-product" onclick="lisaaKoriin('${paivanTarjous.name}', ${tarjousHinta})" style="background: #ff6b00; padding: 12px 20px;">
+                            <button class="btn-add-product" onclick="lisaaKoriin(${paivanTarjous.id}, '${paivanTarjous.name}', ${tarjousHinta})" style="background: #ff6b00; padding: 12px 20px;">
                                 <i class="fas fa-cart-plus"></i> Lisää
                             </button>
                         </div>
@@ -208,7 +190,7 @@ async function haeRuoatTietokannasta() {
                         </div>
                         <div class="product-image-container">
                             ${kuvaHTML}
-                            <button class="btn-add-product" onclick="lisaaKoriin('${tuote.name}', ${tuote.price})">
+                            <button class="btn-add-product" onclick="lisaaKoriin(${tuote.id}, '${tuote.name}', ${tuote.price})">
                                 <i class="fas fa-plus"></i> Lisää
                             </button>
                         </div>
