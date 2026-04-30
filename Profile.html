@@ -16,7 +16,7 @@
         <li><a href="Roast.html">Etusivu</a></li>
         <li><a href="About.html">Meistä</a></li>
         <li><a href="Kassa.html" class="btn-kassa">Ostoskori</a></li>
-        <li><a href="Register.html" id="registerLink">Rekisteröidy</a></li>
+        <li><a href="register.html" id="registerLink">Rekisteröidy</a></li>
         <li><a href="login.html" class="btn-login" id="main-auth-btn">Kirjaudu</a></li>
 
 
@@ -45,10 +45,29 @@
         </div>
 
         <div class="profile-actions">
-            <button onclick="window.location.href='Tilaus.html'" class="btn-secondary">Tilaushistoria</button>
-            <button onclick="changePassword()" class="btn-secondary">Vaihda salasana</button>
-            <button onclick="logout()" class="btn-login logout-red">Kirjaudu ulos</button>
+
+            <div id="history-container">
+            </div>
+
+            <div id="password-change-section" style="display:none;">
+                <div class="form-group">
+                    <label for="password">Uusi salasana</label>
+                    <input type="password" id="password" name="password" class="password-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm-password">Vahvista salasana</label>
+                    <input type="password" id="confirm-password" name="confirm-password" class="password-input">
+                </div>
+                <button onclick="savePassword()" class="btn-login">Tallenna uusi salasana</button>
+            </div>
+
+            <button id="toggle-pw-btn" onclick="changePassword()" class="btn-login">Vaihda salasana</button>
+
         </div>
+
+            <button onclick="logout()" class="btn-login logout-red">Kirjaudu ulos</button>
+
     </section>
 </main>
 

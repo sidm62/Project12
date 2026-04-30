@@ -129,22 +129,27 @@ app.post('/api/orders', (req, res) => {
     });
 });
 
-app.get('/api/orders/:userId', (req, res) => {
+app.get('/api/orders/user/:userId', (req, res) => {
+    const userId = req.params.userId;
+
     const sql = `
-        SELECT o.id AS orderId, o.created_at, o.total_price, 
-               oi.product_id, oi.quantity, p.name, p.price
-        FROM orders o
-        JOIN order_Items oi ON o.id = oi.order_id
-        JOIN products p ON oi.product_id = p.id
-        WHERE o.user_id = ?
-        ORDER BY o.created_at DESC
-    `;
-    db.query(sql, [req.params.userId], (err, results) => {
-        if (err) return res.status(500).json({ error: 'Virhe historian haussa' });
+    SELECT o.id AS orderId, o.created_at, o.total_price, 
+           oi.quantity, p.name, p.price
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN products p ON oi.product_id = p.id
+    WHERE o.user_id = ?
+    ORDER BY o.created_at DESC
+`;
+
+    db.query(sql, [userId], (err, results) => {
+        if (err) {
+            console.error("SQL-VIRHE:", err);
+            return res.status(500).json({ error: 'Virhe historian haussa' });
+        }
         res.json(results);
     });
 });
-
 // Käynnistys
 const PORT = 3000;
 app.listen(PORT, () => {
