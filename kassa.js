@@ -9,6 +9,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+function naytaIlmoitusModal(otsikko, teksti,nappiTeksti, callback = null) {
+    const modal = document.getElementById("menuModal");
+    const title = document.getElementById("modal-title");
+    const text = document.getElementById("modal-text");
+    const footer = document.getElementById("modal-footer");
+
+    if (!modal) return;
+
+    title.innerText = otsikko;
+    text.innerText = teksti;
+
+    footer.innerHTML = `<button class="btn-confirm" id="modal-ok-btn" style="width: 100%;">${nappiTeksti}</button>`;
+
+    modal.style.display = "flex";
+
+    document.getElementById("modal-ok-btn").onclick = function() {
+        modal.style.display = "none";
+        if (callback) callback();
+    };
+}
+
+
+
+
 // --- KASSA.HTML LOGIIKKA ---
 
 function paivitaKassaNakyma() {
@@ -29,7 +53,7 @@ function paivitaKassaNakyma() {
 
     ostoskori.forEach((tuote, index) => {
         const hinta = parseFloat(tuote.price);
-        const maara = parseInt(tuote.amount);
+        const maara = parseInt(tuote.quantity || tuote.amount);
         const riviSumma = hinta * maara;
         valisummaYhteensa += riviSumma;
 
@@ -55,17 +79,19 @@ function paivitaKassaNakyma() {
 }
 
 function tilaus(event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
     let ostoskori = JSON.parse(localStorage.getItem('ostoskori')) || [];
 
     if (ostoskori.length === 0) {
-        alert("Ostoskori on tyhjä!");
+        naytaIlmoitusModal("Hups!", "Ostoskorisi on tyhjä!", "Selvä");
         return;
     }
-    // Näyttää modalin Kassa.html-sivulla
-    document.getElementById("confirmModal").style.display = "flex";
-}
 
+    const confirmModal = document.getElementById("confirmModal");
+    if (confirmModal) {
+        confirmModal.style.display = "flex";
+    }
+}
 // Tämä funktio ajetaan, kun Kassa.html:n modalissa klikataan "Vahvista"
 function processOrder() {
     // Siirrytään uudelle sivulle täyttämään tiedot
@@ -113,10 +139,11 @@ async function lahetaTilaus() {
     }
 
     if (!userId) {
-        alert("Kirjaudu sisään!");
+        naytaIlmoitusModal( "Kirjaudu sisään", "Sinun täytyy olla kirjautunut sisään lähettääksesi tilauksen.", "Kirjaudu", () => {
+            window.location.href = "login.html";
+        });
         return;
     }
-
     const tilausData = {
         userId: userId,
         total_price: summa,
@@ -134,20 +161,25 @@ async function lahetaTilaus() {
 
         if (response.ok) {
             localStorage.removeItem('ostoskori');
-            alert("Tilaus vastaanotettu!");
-            window.location.href = "Roast.html";
+            // Korvattu alert modaalilla
+            naytaIlmoitusModal("Tilaus vastaanotettu!", "Kiitos tilauksestasi! Alamme valmistaa sitä heti.", "Jatka tilaamista", () => {
+                window.location.href = "Roast.html";
+            });
+
         } else {
-            alert("Virhe tilauksessa.");
+            naytaIlmoitusModal( "Virhe", "Tilausta ei voitu käsitellä. Yritä uudelleen myöhemmin.", "OK");
         }
     } catch (err) {
         console.error("Yhteysvirhe:", err);
+        naytaIlmoitusModal( "Yhteysvirhe", "Palvelimeen ei saatu yhteyttä.", "OK");
     }
 }
 
 // --- YLEISET ---
 
 function closeModal() {
-    document.getElementById("confirmModal").style.display = "none";
+    const confirmModal = document.getElementById("confirmModal");
+    if(confirmModal) confirmModal.style.display = "none";
 }
 
 function poistaTuote(index) {

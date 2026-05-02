@@ -22,9 +22,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (response.ok) {
                     localStorage.setItem("user", JSON.stringify(data.user));
                     localStorage.setItem("userId", data.user.id);
-                    window.location.href = "Roast.html";
+
+                    const previousPage = document.referrer;
+
+                    if (previousPage && previousPage.includes(window.location.hostname) && !previousPage.includes("register.html")) {
+                        window.location.href = previousPage;
+                    } else {
+                        window.location.href = "Roast.html";
+                    }
                 } else {
-                    alert("Kirjautuminen epäonnistui: " + data.message);
+                    naytaIlmoitusModal("Kirjautuminen epäonnistui", data.message || "Tarkista käyttäjätiedot ja yritä uudelleen.", "OK");
                 }
 
             } catch (error) {

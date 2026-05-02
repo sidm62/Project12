@@ -176,40 +176,64 @@ async function naytaTilausHistoria() {
     }
 }
 function orderAgain(tuotteetRaw) {
+    const modal = document.getElementById("menuModal");
+    const title = document.getElementById("modal-title");
+    const text = document.getElementById("modal-text");
+    const footer = document.getElementById("modal-footer");
+    const icon = document.getElementById("modal-icon");
+
+
+
+
+
     try {
-        const oldTuotteet = JSON.parse(tuotteetRaw);
 
+        const tuotteetArray = JSON.parse(tuotteetRaw);
 
-        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        icon.innerHTML = "🔄";
+        title.innerText = "Tilaa uudelleen?";
+        text.innerText = "Haluatko lisätä kaikki tämän tilauksen tuotteet ostoskoriin?";
 
-        oldTuotteet.forEach(oldItem => {
+        footer.innerHTML = `
+            <button class="btn-cancel" onclick="closeMenuModal()">Peruuta</button>
+            <button class="btn-confirm" id="confirm-reorder-action">Lisää kaikki</button>
+        `;
 
-            const existingItem = cart.find(item => item.id === oldItem.id);
+        modal.style.display = "flex";
 
-            if (existingItem) {
+        document.getElementById("confirm-reorder-action").onclick = function() {
 
-                existingItem.quantity += oldItem.quantity;
-            } else {
-                // Jos ei ole, lisätään uutena tuotteena
-                cart.push({
-                    id: oldItem.id,
-                    name: oldItem.name,
-                    price: oldItem.price,
-                    quantity: oldItem.quantity
-                });
-            }
-        });
+            let ostoskori = JSON.parse(localStorage.getItem("ostoskori")) || [];
 
+            tuotteetArray.forEach(oldItem => {
+                const existingItem = ostoskori.find(item => item.id === oldItem.id);
 
-        localStorage.setItem("cart", JSON.stringify(cart));
+                if (existingItem) {
+                    existingItem.quantity += oldItem.quantity;
+                } else {
+                    ostoskori.push({
+                        id: oldItem.id,
+                        name: oldItem.name,
+                        price: oldItem.price,
+                        quantity: oldItem.quantity
+                    });
+                }
+            });
 
+            localStorage.setItem("ostoskori", JSON.stringify(ostoskori));
 
-        if (confirm("Tuotteet lisätty ostoskoriin! Siirrytäänkö suoraan tilaamaan?")) {
-            window.location.href = "Ostoskori.html";
-        }
+            if (typeof updateCart === "function") updateCart();
+
+            icon.innerHTML = "✅";
+            title.innerText = "Onnistui!";
+            text.innerText = "Tuotteet on lisätty ostoskoriin.";
+            footer.innerHTML = `
+                <button class="btn-confirm" onclick="window.location.href='Kassa.html'">Mene kassalle</button>
+                <button class="btn-cancel" onclick="closeMenuModal()">Jatka selailua</button>
+            `;
+        };
     } catch (error) {
-        console.error("Virhe uudelleentilauksessa:", error);
-        alert("Tuotteiden lisääminen epäonnistui.");
+        console.error("Virhe:", error);
     }
 
 }
