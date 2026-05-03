@@ -1,7 +1,7 @@
 let ostoskori = JSON.parse(localStorage.getItem('ostoskori')) || [];
 updateCart();
 
-function lisaaKoriin(name, price) {
+function lisaaKoriin(id, name, price) {
     const modal = document.getElementById("menuModal");
     const title = document.getElementById("modal-title");
     const text = document.getElementById("modal-text");
@@ -28,7 +28,7 @@ function lisaaKoriin(name, price) {
         if (existingProduct) {
             existingProduct.amount += 1;
         } else {
-            ostoskori.push({ name: name, price: price, amount: 1, extra: "" });
+            ostoskori.push({ id: id, name: name, price: price, amount: 1, extra: "" });
         }
 
         localStorage.setItem('ostoskori', JSON.stringify(ostoskori));
@@ -52,24 +52,6 @@ function updateCart() {
         const totalItems = ostoskori.reduce((sum, item) => sum + item.amount, 0);
         count.innerText = totalItems;
     }
-}
-
-function suodata(kategoria) {
-    const kortit = document.querySelectorAll('.menu-card');
-    kortit.forEach(kortti => {
-        if (kategoria === 'kaikki' || kortti.classList.contains(kategoria)) {
-            kortti.style.display = "flex";
-        } else {
-            kortti.style.display = "none";
-        }
-    });
-    const kategoriaLinkit = document.querySelectorAll('.category-list li');
-    kategoriaLinkit.forEach(li => {
-        li.classList.remove('active');
-        if (li.getAttribute('onclick').includes(`'${kategoria}'`)) {
-            li.classList.add('active');
-        };
-    });
 };
 
 function updatenNavBar() {
@@ -150,7 +132,7 @@ async function haeRuoatTietokannasta() {
                         </div>
                         <div class="product-image-container">
                             ${kuvaHTML}
-                            <button class="btn-add-product" onclick="lisaaKoriin('${paivanTarjous.name}', ${tarjousHinta})" style="background: #ff6b00; padding: 12px 20px;">
+                            <button class="btn-add-product" onclick="lisaaKoriin(${paivanTarjous.id}, '${paivanTarjous.name}', ${tarjousHinta})" style="background: #ff6b00; padding: 12px 20px;">
                                 <i class="fas fa-cart-plus"></i> Lisää
                             </button>
                         </div>
@@ -227,6 +209,7 @@ async function haeRuoatTietokannasta() {
                             ${kuvaHTML}
                             <!-- Tässä viemme ostoskoriHinta-muuttujan lisaaKoriin-funktiolle -->
                             <button class="btn-add-product" onclick="lisaaKoriin('${tuote.name}', ${ostoskoriHinta})">
+                            <button class="btn-add-product" onclick="lisaaKoriin(${tuote.id}, '${tuote.name}', ${tuote.price})">
                                 <i class="fas fa-plus"></i> Lisää
                             </button>
                         </div>
@@ -291,13 +274,23 @@ async function lahetaTilaus() {
     // 2. Lasketaan kokonaishinta
     const kokonaishinta = ostoskori.reduce((summa, tuote) => summa + (tuote.price * tuote.amount), 0);
 
-    // 3. Valmistellaan data lähetystä varten
-    // Huom: Käytetään väliaikaisesti user_id: 1. Myöhemmin tähän vaihdetaan kirjautuneen käyttäjän ID.
-    const tilausData = {
-        userId: 1, 
-        total: kokonaishinta,
-        items: ostoskori 
-    };
+    /// 3. Valmistellaan data lähetystä varten
+let asiakasId = 1; // Oletusarvo varmuuden vuoksi
+
+// Tarkistetaan, onko käyttäjä kirjautunut sisään
+const tallennettuKayttaja = localStorage.getItem('user');
+if (tallennettuKayttaja) {
+    const kayttaja = JSON.parse(tallennettuKayttaja);
+    if (kayttaja.id) {
+        asiakasId = kayttaja.id; // Otetaan talteen oikea asiakas-ID
+    }
+}
+
+const tilausData = {
+    userId: asiakasId, 
+    total_price: kokonaishinta, 
+    tuotteet: ostoskori         
+};
 
     try {
         // 4. Lähetetään tilaus palvelimelle (POST-pyyntö)
@@ -324,3 +317,93 @@ async function lahetaTilaus() {
         console.error("Virhe tilauksen teossa:", error);
     }
 }
+// --- ADMIN-LINKIN NÄYTTÄMINEN NAVIGAATIOSSA ---
+
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Haetaan käyttäjän tiedot selaimen muistista
+    const tallennettuKayttaja = localStorage.getItem('user');
+    
+    if (tallennettuKayttaja) {
+        const kayttaja = JSON.parse(tallennettuKayttaja);
+        
+        // 2. Tarkistetaan onko kirjautunut käyttäjä ADMIN
+        if (kayttaja.role === 'ADMIN' || kayttaja.role === 'admin') {
+            
+            // Haetaan sivun navigaatiolista
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (navLinks) {
+                // 3. Luodaan uusi linkki admin-sivulle
+                const adminLi = document.createElement('li');
+                const adminLink = document.createElement('a');
+                
+                adminLink.href = 'admin.html';
+                adminLink.textContent = 'Admin-paneeli';
+                
+                // Tyylitellään linkki hieman erottuvammaksi (Roast-oranssilla)
+                adminLink.style.color = '#ff6b00'; 
+                adminLink.style.fontWeight = 'bold';
+                
+                adminLi.appendChild(adminLink);
+                
+                // 4. Lisätään linkki navigaatiopalkin ensimmäiseksi elementiksi
+                navLinks.prepend(adminLi);
+            }
+        }
+    }
+});
+// --- HSL API: AIKATAULUJEN HAKU ---
+
+// --- HSL API: AIKATAULUJEN HAKU (OMALTA PALVELIMELTA) ---
+async function haeHSL() {
+    const listaElementti = document.getElementById("hsl-lista");
+    
+    if (!listaElementti) {
+        return; 
+    }
+
+    try {
+        const response = await fetch("http://localhost:3000/api/hsl");
+        
+        // SUOJAMUURI: Jos backend palauttaa virheen (kuten 500), heitetään virhe heti
+        if (!response.ok) {
+            throw new Error(`Palvelinvirhe: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // SUOJAMUURI: Varmistetaan, että HSL-data on olemassa ennen sen lukemista
+        if (!data || !data.data || !data.data.stop) {
+            throw new Error("Datan muoto on väärä tai avain ei ole vielä aktiivinen.");
+        }
+
+        const lahdot = data.data.stop.stoptimesWithoutPatterns;
+        const listaElementti = document.getElementById("hsl-lista");
+        
+        listaElementti.innerHTML = ""; // Tyhjennetään teksti
+
+        lahdot.forEach(lahto => {
+            const tunnit = Math.floor(lahto.realtimeDeparture / 3600) % 24;
+            const minuutit = Math.floor((lahto.realtimeDeparture % 3600) / 60);
+            const aika = `${tunnit.toString().padStart(2, '0')}:${minuutit.toString().padStart(2, '0')}`;
+            
+            // Tehdään tulostuksesta asiakkaalle selkeämpi ja visuaalisempi
+            listaElementti.innerHTML += `
+                <li style="padding: 10px 0; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 1.1em; color: #ff6b00;">🚌 <strong>${aika}</strong></span>
+                    <span style="font-size: 0.9em; color: #aaa;">Suunta: ${lahto.headsign}</span>
+                </li>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Virhe HSL-datan haussa:", error);
+        const lilahdotstaElementti = document.getElementById("hsl-lista");
+        if (listaElementti) {
+            listaElementti.innerHTML = "<li style='color: #e74c3c;'>Aikatauluja ei voitu ladata (Palvelinvirhe).</li>";
+        }
+    }
+}
+
+// Suoritetaan haku automaattisesti, kun sivu ladataan
+document.addEventListener("DOMContentLoaded", haeHSL);

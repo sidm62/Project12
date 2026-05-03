@@ -16,7 +16,7 @@
         <li><a href="Roast.html">Etusivu</a></li>
         <li><a href="About.html">Meistä</a></li>
         <li><a href="Kassa.html" class="btn-kassa">Ostoskori</a></li>
-        <li><a href="Register.html" id="registerLink">Rekisteröidy</a></li>
+        <li><a href="register.html" id="registerLink">Rekisteröidy</a></li>
         <li><a href="login.html" class="btn-login" id="main-auth-btn">Kirjaudu</a></li>
 
 
@@ -24,33 +24,72 @@
 </nav>
 
 <main class="auth-container">
-    <section class="login-card profile-card">
-        <h1>Oma Profiili</h1>
+    <section class="login-card profile-card" style="max-width: 600px; width: 100%;">
+        <h1 style="margin-bottom: 30px;">Oma Profiili</h1>
 
-        <div class="profile-info">
-            <div class="info-group">
-                <label>Käyttäjänimi:</label>
-                <h2 id="username">Ladataan...</h2>
+        <!-- 1. KÄYTTÄJÄN TIEDOT -->
+        <div class="profile-info" style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: left;">
+            <div class="info-group" style="display: flex; justify-content: space-between; border-bottom: 1px solid #444; padding: 10px 0;">
+                <label style="color: #aaa;">Käyttäjänimi:</label>
+                <span id="username" style="font-weight: bold; color: #fff; font-size: 1.1rem;">Ladataan...</span>
             </div>
 
-            <div class="info-group">
-                <label>Sähköposti:</label>
-                <p id="email"></p>
+            <div class="info-group" style="display: flex; justify-content: space-between; border-bottom: 1px solid #444; padding: 10px 0;">
+                <label style="color: #aaa;">Sähköposti:</label>
+                <span id="email" style="font-weight: bold; color: #fff;">Ladataan...</span>
             </div>
 
-            <div class="info-group">
-                <label>Rooli:</label>
-                <p id="role" class="badge">-</p>
+            <div class="info-group" style="display: flex; justify-content: space-between; padding: 10px 0;">
+                <label style="color: #aaa;">Rooli:</label>
+                <span id="role" class="badge" style="color: #ff6b00; text-transform: uppercase;">-</span>
+            </div>
+        </div>
+        <!-- UUSI: 1.5 TILAUKSEN SEURANTA -->
+        <div id="tracking-container" style="background: rgba(255, 107, 0, 0.1); border: 2px solid #ff6b00; padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: left;">
+            <h2 style="margin-top: 0; color: #ff6b00; font-size: 1.5rem; margin-bottom: 15px;">
+                <i class="fas fa-motorcycle"></i> Aktiivinen tilaus
+            </h2>
+            <div id="active-orders-list">
+                <!-- JavaScript piirtää aktiivisen tilauksen tiedot tänne -->
+                <p style="color: #ccc; font-style: italic;">Ei aktiivisia tilauksia tällä hetkellä.</p>
             </div>
         </div>
 
-        <div class="profile-actions">
-            <button onclick="window.location.href='Tilaus.html'" class="btn-secondary">Tilaushistoria</button>
-            <button onclick="changePassword()" class="btn-secondary">Vaihda salasana</button>
-            <button onclick="logout()" class="btn-login logout-red">Kirjaudu ulos</button>
+        <!-- 2. TILAUSHISTORIA -->
+        <div id="history-container" style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: left;">
+            <!-- JavaScript piirtää historian tänne -->
+        </div>
+
+        <!-- 3. TOIMINNOT JA NAPIT -->
+        <div class="profile-actions" style="display: flex; flex-direction: column; gap: 15px;">
+            
+            <!-- Salasanan vaihto -osio (piilotettu oletuksena) -->
+            <div id="password-change-section" style="display:none; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px;">
+                <div class="form-group" style="text-align: left;">
+                    <label for="password">Uusi salasana</label>
+                    <input type="password" id="password" name="password" class="password-input" style="width: 100%; padding: 10px; margin-top: 5px;">
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label for="confirm-password">Vahvista salasana</label>
+                    <input type="password" id="confirm-password" name="confirm-password" class="password-input" style="width: 100%; padding: 10px; margin-top: 5px;">
+                </div>
+                <button onclick="savePassword()" class="btn-login">Tallenna uusi salasana</button>
+            </div>
+
+            <button id="toggle-pw-btn" onclick="changePassword()" class="btn-login" style="background: #333; border: 1px solid #555;">Vaihda salasana</button>
+            <button onclick="logout()" class="btn-login logout-red" style="background: #e74c3c;">Kirjaudu ulos</button>
+
         </div>
     </section>
 </main>
+<div id="menuModal" class="modal" style="display: none">
+    <div class="modal-content">
+        <div id="modal-icon"></div>
+        <h2 id="modal-title"></h2>
+        <p id="modal-text"></p>
+        <div id="modal-footer" class="modal-footer">
+    </div>
+</div>
 
 </body>
 </html>

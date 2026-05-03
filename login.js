@@ -22,9 +22,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (response.ok) {
                     localStorage.setItem("user", JSON.stringify(data.user));
                     localStorage.setItem("userId", data.user.id);
-                    window.location.href = "Roast.html";
+
+                    // UUSI LISÄYS: Tarkistetaan onko käyttäjä ylläpitäjä
+                    if (data.user.role === 'ADMIN' || data.user.role === 'admin') {
+                        window.location.href = "admin.html"; // Ohjataan suoraan admin-paneeliin
+                    } else {
+                        // TAVALLINEN ASIAKAS: Alkuperäinen logiikkasi
+                        const previousPage = document.referrer;
+
+                        if (previousPage && previousPage.includes(window.location.hostname) && !previousPage.includes("register.html")) {
+                            window.location.href = previousPage;
+                        } else {
+                            window.location.href = "Roast.html";
+                        }
+                    }
                 } else {
-                    alert("Kirjautuminen epäonnistui: " + data.message);
+                    naytaIlmoitusModal("Kirjautuminen epäonnistui", data.message || "Tarkista käyttäjätiedot ja yritä uudelleen.", "OK");
                 }
 
             } catch (error) {

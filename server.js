@@ -77,8 +77,15 @@ app.put('/api/auth/change-password', (req, res) => {
 // --- KAUPAN REITIT (Tuotteet ja Tilaukset) ---
 
 app.get('/api/products', (req, res) => {
-    db.query('SELECT * FROM Products', (err, results) => {
-        if (err) return res.status(500).json({ error: 'Tietokantavirhe' });
+    db.query('SELECT * FROM products', (err, results) => {
+        if (err) {
+            console.error("❌ SQL-VIRHE:", err); // Tämä näkyy WebStormissa
+            // Palautetaan tyhjä lista [] ja virheviesti
+            return res.status(500).json({
+                viesti: "Tietokantavirhe",
+                details: err.message
+            });
+        }
         res.json(results);
     });
 });
@@ -131,32 +138,101 @@ app.put('/api/products/:id', (req, res) => {
 });
 
 app.post('/api/orders', (req, res) => {
-    const { userId, items, total } = req.body;
-    db.query('INSERT INTO Orders (user_id, total_price) VALUES (?, ?)', [userId, total], (err, result) => {
-        if (err) return res.status(500).json({ error: 'Virhe tilauksessa' });
+    // Otetaan vastaan frontista tulevat kentät
+    const { userId, total_price, tuotteet } = req.body;
+
+    // TÄRKEÄ: Katso WebStormin terminaaliin, kun painat nappia!
+    console.log("Datan tarkistus:", { userId, total_price, tuotteet });
+
+    if (!tuotteet || !Array.isArray(tuotteet)) {
+        return res.status(400).json({ error: "Tuotteet puuttuvat tai ne ovat väärässä muodossa" });
+    }
+
+    const sqlOrder = "INSERT INTO orders (user_id, total_price) VALUES (?, ?)";
+    db.query(sqlOrder, [userId, total_price], (err, result) => {
+        if (err) {
+            console.error("Orders-taulun virhe:", err.message);
+            return res.status(500).json({ error: err.message });
+        }
 
         const orderId = result.insertId;
-        const orderItemsData = items.map(item => [orderId, item.productId, item.amount, item.price]);
 
-        db.query('INSERT INTO Order_Items (order_id, product_id, quantity, price_at_purchase) VALUES ?', [orderItemsData], (err) => {
-            if (err) return res.status(500).json({ error: 'Virhe tilausriveissä' });
-            res.json({ message: "Tilaus onnistui!" });
+        // Luodaan data order_items-taululle (järjestys: order_id, product_id, quantity, unit_price)
+        const orderItemsData = tuotteet.map(item => [
+            orderId,
+            item.id,      // Varmista että frontti lähettää 'id'
+            item.amount,  // Varmista että frontti lähettää 'amount'
+            item.price    // Varmista että frontti lähettää 'price'
+        ]);
+
+        const sqlItems = "INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES ?";
+        db.query(sqlItems, [orderItemsData], (err) => {
+            if (err) {
+                console.error("Order_items-taulun virhe:", err.message);
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ message: "Tilaus onnistui!", orderId: orderId });
         });
     });
 });
+// --- HSL API REITTI (BACKEND PROXY) ---
+app.get('/api/hsl', async (req, res) => {
+    const query = `
+    {
+      stop(id: "HSL:1040129") {
+        name
+        stoptimesWithoutPatterns(numberOfDepartures: 5) {
+          realtimeDeparture
+          headsign
+        }
+      }
+    }`;
 
-app.get('/api/orders/:userId', (req, res) => {
+    try {
+        const response = await fetch("https://api.digitransit.fi/routing/v2/hsl/gtfs/v1", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "digitransit-subscription-key": "7767ea6f9e7a4ef7a60e7666499c73bf"
+            },
+            body: JSON.stringify({ query: query })
+        });
+
+        if (!response.ok) {
+            const virheTeksti = await response.text();
+            console.error("HSL Palvelimen antama virheviesti:", virheTeksti);
+            return res.status(response.status).json({ message: "HSL rajapinta palautti virheen", details: virheTeksti });
+        }
+
+        const data = await response.json();
+        res.json(data);
+
+    } catch (error) {
+        console.error("Virhe HSL-tiedon hakemisessa backendissä:", error);
+        res.status(500).json({ message: "Palvelinvirhe aikatauluja haettaessa" });
+    }
+});
+app.get('/api/orders/user/:userId', (req, res) => {
+    const userId = req.params.userId;
+
+    // Korjattu SQL-kysely:
+    // 1. Poistettu ylimääräinen "app.post" JOIN-lauseesta.
+    // 2. Lisätty o.status, jotta asiakas näkee tilauksen vaiheen.
     const sql = `
-        SELECT o.id AS orderId, o.order_date, o.total_price, 
-               oi.product_id, oi.quantity, p.name, p.price
-        FROM Orders o
-        JOIN Order_Items oi ON o.id = oi.order_id
-        JOIN Products p ON oi.product_id = p.id
-        WHERE o.user_id = ?
-        ORDER BY o.order_date DESC
+    SELECT o.id AS orderId, o.created_at, o.total_price, o.status, 
+           oi.quantity, p.name, p.price
+    FROM orders o
+    JOIN order_items oi ON o.id = oi.order_id
+    JOIN products p ON oi.product_id = p.id
+    WHERE o.user_id = ?
+    ORDER BY o.created_at DESC
     `;
-    db.query(sql, [req.params.userId], (err, results) => {
-        if (err) return res.status(500).json({ error: 'Virhe historian haussa' });
+
+    db.query(sql, [userId], (err, results) => {
+        if (err) {
+            console.error("SQL-VIRHE:", err);
+            return res.status(500).json({ error: 'Virhe historian haussa' });
+        }
         res.json(results);
     });
 });

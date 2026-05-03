@@ -11,12 +11,11 @@
 <body class="cart-page-roast">
 
 <nav class="navbar">
-  <div class="logo"><a href="Roast.html" style="color:inherit; text-decoration:none;">ROAST</a></div>
+  <div class="logo"><a href="Roast.html">ROAST</a></div>
   <ul class="nav-links">
     <li><a href="Roast.html">Etusivu</a></li>
     <li><a href="Menu.html">Menu</a></li>
     <li><a href="login.html" class="btn-login" id="main-auth-btn">Kirjaudu</a></li>
-
   </ul>
 </nav>
 
@@ -28,12 +27,12 @@
         <h2>1. Toimitustiedot</h2>
         <form id="order-form">
           <div class="form-group">
-            <label>Nimi</label>
-            <input type="text" placeholder="Matti Meikäläinen">
+            <label for="customer-name">Nimi</label>
+            <input type="text" id="customer-name" placeholder="Matti Meikäläinen">
           </div>
           <div class="form-group">
-            <label>Puhelinnumero</label>
-            <input type="text" placeholder="040 123 4567">
+            <label for="customer-phone">Puhelinnumero</label>
+            <input type="text" id="customer-phone" placeholder="040 123 4567">
           </div>
 
           <h3>Valitse toimitustapa</h3>
@@ -41,15 +40,37 @@
             <label class="method-option">
               <input type="radio" name="delivery" value="0.00" checked onchange="laskeLoppusumma()">
               <div class="method-box">
-                <strong>Nouto</strong>
+                <strong>Nouto</strong><br>
                 <span>0,00 €</span>
               </div>
             </label>
             <label class="method-option">
               <input type="radio" name="delivery" value="4.90" onchange="laskeLoppusumma()">
               <div class="method-box">
-                <strong>Kuljetus</strong>
+                <strong>Kuljetus</strong><br>
                 <span>4,90 €</span>
+              </div>
+            </label>
+          </div>
+
+          <h3>2. Valitse maksutapa</h3>
+          <div class="method-selector-grid">
+            <label class="method-option">
+              <input type="radio" name="payment" value="Kortti" checked>
+              <div class="method-box">
+                <strong>Kortti</strong>
+              </div>
+            </label>
+            <label class="method-option">
+              <input type="radio" name="payment" value="MobilePay">
+              <div class="method-box">
+                <strong>MobilePay</strong>
+              </div>
+            </label>
+            <label class="method-option">
+              <input type="radio" name="payment" value="Käteinen">
+              <div class="method-box">
+                <strong>Käteinen</strong>
               </div>
             </label>
           </div>
@@ -88,12 +109,23 @@
           <span id="tax-amount">0.00 €</span>
         </div>
 
-        <button class="btn-primary full-width-btn" onclick="lahetaTilaus()">VAHVISTA TILAUS</button>
+        <button class="btn-primary full-width-btn" onclick="lahetaTilaus()">
+          VAHVISTA TILAUS
+        </button>
       </div>
     </aside>
 
   </div>
 </main>
+<div id="menuModal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div id="modal-icon" style="font-size: 3rem; margin-bottom: 10px;"></div>
+    <h2 id="modal-title"></h2>
+    <p id="modal-text"></p>
+    <div id="modal-footer" class="modal-footer">
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
