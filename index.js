@@ -199,16 +199,34 @@ async function haeRuoatTietokannasta() {
                 const kuvaSrc = tuote.image_url ? `images/${tuote.image_url}` : '';
                 const kuvaHTML = kuvaSrc ? `<img src="${kuvaSrc}" alt="${tuote.name}" class="product-image">` : '';
 
+                // --- UUSI ALENNUSLOGIIKKA ---
+                let hintaTulostus = `${tuote.price} €`; 
+                let ostoskoriHinta = tuote.price; // Oletuksena ostoskoriin menee normaali hinta
+
+                // Tarkistetaan onko tietokannassa alennushintaa
+                if (tuote.discount_price !== null && tuote.discount_price > 0) {
+                    // Yliviivataan vanha hinta ja näytetään uusi punaisena
+                    hintaTulostus = `
+                        <span style="text-decoration: line-through; color: #888; font-size: 0.9em;">${tuote.price} €</span> 
+                        <span style="color: #ff3333; font-weight: bold; margin-left: 8px;">${tuote.discount_price} € 🔥</span>
+                    `;
+                    // Vaihdetaan ostoskoriin meneväksi hinnaksi halvempi alennushinta
+                    ostoskoriHinta = tuote.discount_price;
+                }
+                // ----------------------------
+
                 html += `
                     <div class="product-card">
                         <div class="product-info">
                             <h3>${tuote.name}</h3>
                             <p>${tuote.description || ''}</p>
-                            <div class="product-price">${tuote.price}€</div>
+                            <!-- Tähän tulostuu nyt oikea hintanäkymä -->
+                            <div class="product-price">${hintaTulostus}</div>
                         </div>
                         <div class="product-image-container">
                             ${kuvaHTML}
-                            <button class="btn-add-product" onclick="lisaaKoriin('${tuote.name}', ${tuote.price})">
+                            <!-- Tässä viemme ostoskoriHinta-muuttujan lisaaKoriin-funktiolle -->
+                            <button class="btn-add-product" onclick="lisaaKoriin('${tuote.name}', ${ostoskoriHinta})">
                                 <i class="fas fa-plus"></i> Lisää
                             </button>
                         </div>
@@ -259,3 +277,50 @@ window.addEventListener('scroll', () => {
 });
 
 document.addEventListener("DOMContentLoaded", haeRuoatTietokannasta);
+// --- TILAUKSEN LÄHETTÄMINEN (Asiakkaan puoli) ---
+
+async function lahetaTilaus() {
+    // 1. Haetaan ostoskori
+    const ostoskori = JSON.parse(localStorage.getItem('ostoskori')) || [];
+    
+    if (ostoskori.length === 0) {
+        alert("Ostoskorisi on tyhjä!");
+        return;
+    }
+
+    // 2. Lasketaan kokonaishinta
+    const kokonaishinta = ostoskori.reduce((summa, tuote) => summa + (tuote.price * tuote.amount), 0);
+
+    // 3. Valmistellaan data lähetystä varten
+    // Huom: Käytetään väliaikaisesti user_id: 1. Myöhemmin tähän vaihdetaan kirjautuneen käyttäjän ID.
+    const tilausData = {
+        userId: 1, 
+        total: kokonaishinta,
+        items: ostoskori 
+    };
+
+    try {
+        // 4. Lähetetään tilaus palvelimelle (POST-pyyntö)
+        const response = await fetch("http://localhost:3000/api/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(tilausData)
+        });
+
+        if (response.ok) {
+            // 5. Jos onnistui, tyhjennetään ostoskori ja ilmoitetaan asiakkaalle
+            localStorage.removeItem('ostoskori');
+            alert("Tilaus vastaanotettu! Keittiö valmistaa ruokaasi pian.");
+            
+            // Päivitetään sivun näkymä (esim. ostoskorin numero nollautuu)
+            if (typeof updateCart === "function") {
+                updateCart();
+            }
+            window.location.reload(); 
+        } else {
+            alert("Virhe tilauksen lähetyksessä. Yritä uudelleen.");
+        }
+    } catch (error) {
+        console.error("Virhe tilauksen teossa:", error);
+    }
+}
