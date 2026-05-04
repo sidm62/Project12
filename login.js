@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     localStorage.setItem("user", JSON.stringify(data.user));
                     localStorage.setItem("userId", data.user.id);
 
-                    // UUSI LISÄYS: Tarkistetaan onko käyttäjä ylläpitäjä
+                    // Tarkistetaan onko käyttäjä ylläpitäjä
                     if (data.user.role === 'ADMIN' || data.user.role === 'admin') {
                         window.location.href = "admin.html"; // Ohjataan suoraan admin-paneeliin
                     } else {

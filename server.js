@@ -15,7 +15,8 @@ const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
+    charset: 'utf8mb4'
 });
 
 // --- AUTH-REITIT ---
@@ -215,9 +216,7 @@ app.get('/api/hsl', async (req, res) => {
 app.get('/api/orders/user/:userId', (req, res) => {
     const userId = req.params.userId;
 
-    // Korjattu SQL-kysely:
-    // 1. Poistettu ylimääräinen "app.post" JOIN-lauseesta.
-    // 2. Lisätty o.status, jotta asiakas näkee tilauksen vaiheen.
+
     const sql = `
     SELECT o.id AS orderId, o.created_at, o.total_price, o.status, 
            oi.quantity, p.name, p.price
@@ -270,7 +269,14 @@ app.put('/api/orders/:id/status', (req, res) => {
 
 // Käynnistys
 const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`\n🚀 ROAST-palvelin rullaa portissa ${PORT}`);
-    console.log(`Kirjautuminen: http://localhost:${PORT}/api/auth/login`);
-});
+// --- PALVELIMEN KÄYNNISTYS JA VIENTI TESTAUSTA VARTEN ---
+if (require.main === module) {
+    const PORT = 3000;
+    app.listen(PORT, () => {
+        console.log(`🚀 ROAST-palvelin rullaa portissa ${PORT}`);
+        console.log(`Kirjautuminen: http://localhost:${PORT}/api/auth/login`);
+    });
+}
+
+
+module.exports = app;

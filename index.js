@@ -305,7 +305,7 @@ const tilausData = {
             localStorage.removeItem('ostoskori');
             alert("Tilaus vastaanotettu! Keittiö valmistaa ruokaasi pian.");
             
-            // Päivitetään sivun näkymä (esim. ostoskorin numero nollautuu)
+            // Päivitetään sivun näkymä 
             if (typeof updateCart === "function") {
                 updateCart();
             }
@@ -352,7 +352,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
-// --- HSL API: AIKATAULUJEN HAKU ---
 
 // --- HSL API: AIKATAULUJEN HAKU (OMALTA PALVELIMELTA) ---
 async function haeHSL() {
