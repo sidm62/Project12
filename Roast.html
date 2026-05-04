@@ -1,22 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
     <title>Roast Burger</title>
     <script src="index.js" defer></script>
+
     <link rel="stylesheet" href="Roast.css">
 </head>
 <body>
 <nav class="navbar">
     <div class="logo">Roast</div>
+
     <ul class="nav-links">
-        <li><a href="Menu.html">Menu</a></li>
-        <li><a href="About.html">Meistä</a></li>
-        <li><a href="Kassa.html" class="btn-kassa">Ostoskori</a></li>
-        <li><a href="register.html" id="registerLink">Rekisteröidy</a></li>
-        <li><a href="login.html" class="btn-login" id="main-auth-btn">Kirjaudu</a></li>
+        <li><a href="Menu.html"><span class="t">Menu</span></a></li>
+        <li><a href="About.html"><span class="t">Meistä</span></a></li>
+        <li><a href="Kassa.html" class="btn-kassa"><span class="t">Ostoskori</span></a></li>
+        <li><a href="register.html" id="registerLink"><span class="t">Rekisteröidy</span></a></li>
+        <li><a href="login.html" class="btn-login" id="main-auth-btn"><span class="t">Kirjaudu</span></a></li>
+
+        <select onchange="KieliValikko(this.value)">
+            <option value="fi">Suomi</option>
+            <option value="en">English</option>
+            <option value="sv">Svenska</option>
+            <option value="es">Español</option>
+        </select>
+
+
+
 
     </ul>
+
+
+
 </nav>
 <header class="hero">
     <h1>Roast Burger</h1>
@@ -34,7 +49,6 @@
             <p>Pe: 10:00-22:00</p>
             <p>La-Su: 11:00-19:00</p>
         </div>
-    </div>
 </section>
 
 

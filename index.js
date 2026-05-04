@@ -240,4 +240,73 @@ window.addEventListener('scroll', () => {
     });
 });
 
+
+async function translatePage(lang) {
+
+    const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        {
+            acceptNode: function(node) {
+
+                const parent = node.parentElement;
+
+                if (!parent) return NodeFilter.FILTER_REJECT;
+
+                // älä koske nav / script / style
+                if (["SCRIPT", "STYLE", "NAV", "INPUT", "BUTTON"].includes(parent.tagName)) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+
+                if (!node.nodeValue.trim()) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        }
+    );
+
+    let node;
+
+    while (node = walker.nextNode()) {
+
+        const original = node.nodeValue.trim();
+        if (!original) continue;
+
+        const translated = await translateText(original, lang);
+
+        node.nodeValue = translated;
+    }
+}
+
+const cache = {};
+
+async function translateText(text, lang) {
+
+    const key = `${lang}:${text}`;
+    if (cache[key]) return cache[key];
+
+    const res = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=fi|${lang}`
+    );
+
+    const data = await res.json();
+
+    cache[key] = data.responseData.translatedText;
+    return cache[key];
+}
+
+
+window.KieliValikko = function(langCode) {
+    if (langCode === "fi") {
+        location.reload();
+        return;
+    }
+
+    translatePage(langCode);
+};
+
 document.addEventListener("DOMContentLoaded", haeRuoatTietokannasta);
+
+
