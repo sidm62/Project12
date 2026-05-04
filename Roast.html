@@ -1,48 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
     <title>Roast Burger</title>
+    <meta name="description" content="ROAST Burger tarjoaa kaupungin herkullisimmat artesaaniburgerit, lisukkeet ja juomat. Tilaa netistä tai tule nauttimaan paikan päälle!">
     <script src="index.js" defer></script>
     <link rel="stylesheet" href="Roast.css">
 </head>
 <body>
-<nav class="navbar">
-    <div class="logo">Roast</div>
-    <ul class="nav-links">
-        <li><a href="Menu.html">Menu</a></li>
-        <li><a href="About.html">Meistä</a></li>
-        <li><a href="Kassa.html" class="btn-kassa">Ostoskori</a></li>
-        <li><a href="register.html" id="registerLink">Rekisteröidy</a></li>
-        <li><a href="login.html" class="btn-login" id="main-auth-btn">Kirjaudu</a></li>
+    <nav class="navbar">
+        <div class="logo">Roast</div>
+        <ul class="nav-links">
+            <li><a href="Menu.html">Menu</a></li>
+            <li><a href="About.html">Meistä</a></li>
+            <li><a href="Kassa.html" class="btn-kassa">Ostoskori</a></li>
+            <li><a href="register.html" id="registerLink">Rekisteröidy</a></li>
+            <li><a href="login.html" class="btn-login" id="main-auth-btn">Kirjaudu</a></li>
+        </ul>
+    </nav>
 
-    </ul>
-</nav>
-<header class="hero">
-    <h1>Roast Burger</h1>
-    <p>Parhaat burgerit kaupungissa!</p>
-    <a href="Menu.html" class="btn">Tilaa nyt</a>
-    </header>
-<section class ="info-container">
-    <div class="info-item">
-            <h3>Sijainti</h3>
-            <p>Helsinginkuja 1, 00500 Helsinki</p>
-        </div>
-        <div class="info-item">
-            <h3>Aukiolo-ajat</h3>
-            <p>Ma-To: 9:00-23:00</p>
-            <p>Pe: 10:00-22:00</p>
-            <p>La-Su: 11:00-19:00</p>
-        </div>
-<!-- HSL Aikataulut -->
-        <div class="info-item">
-            <h3>Lähiliikenne 🚌</h3>
-            <p style="font-size: 0.8em; color: #ccc;">Seuraavat lähdöt: Sörnäinen</p>
-            <ul id="hsl-lista" style="list-style: none; padding: 0;">
-            </ul>
-        </div>
-</section>
-
+    <!-- Pääsisältö alkaa tästä -->
+    <main>
+        <header class="hero">
+            <h1>Roast Burger</h1>
+            <p>Parhaat burgerit kaupungissa!</p>
+            <a href="Menu.html" class="btn">Tilaa nyt</a>
+        </header>
+        
+        <section class="info-container">
+            <div class="info-item">
+                <h2>Sijainti</h2>
+                <p>Helsinginkuja 1, 00500 Helsinki</p>
+            </div>
+            <div class="info-item">
+                <h2>Aukiolo-ajat</h2>
+                <p>Ma-To: 9:00-23:00</p>
+                <p>Pe: 10:00-22:00</p>
+                <p>La-Su: 11:00-19:00</p>
+            </div>
+            <!-- HSL Aikataulut -->
+            <div class="info-item">
+                <h2>Lähiliikenne 🚌</h2>
+                <p style="font-size: 0.8em; color: #fff;">Seuraavat lähdöt: Sörnäinen</p>
+                <ul id="hsl-lista" style="list-style: none; padding: 0;">
+                </ul>
+            </div>
+        </section>
+    </main>
+    <!-- Pääsisältö päättyy -->
 
 </body>
 </html>

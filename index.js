@@ -82,7 +82,22 @@ window.onload = updatenNavBar;
 
 
 
-// TIETOKANTAHAKU 
+// --- APUFUNKTIO RUOKAVALIOMERKINNÖILLE ---
+function luoAllergeenitHTML(allergeeniTeksti) {
+    if (!allergeeniTeksti) return "";
+    
+    // Pilkotaan teksti (esim. "L, G" -> ["L", "G"])
+    const lista = allergeeniTeksti.split(",").map(s => s.trim());
+    
+    // Luodaan jokaisesta kirjaimesta tyylikäs badge
+    let html = '<div class="allergen-container">';
+    lista.forEach(merkki => {
+        html += `<span class="allergen-badge ${merkki}">${merkki}</span>`;
+    });
+    html += '</div>';
+    
+    return html;
+}
 
 async function haeRuoatTietokannasta() {
     try {
@@ -100,22 +115,22 @@ async function haeRuoatTietokannasta() {
         const viikonpaivatEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         const viikonpaivatFi = ["SUNNUNTAIN", "MAANANTAIN", "TIISTAIN", "KESKIVIIKON", "TORSTAIN", "PERJANTAIN", "LAUANTAIN"];
         
-        const paivaIndeksi = new Date().getDay(); // Antaa numeron 0-6 (0 on sunnuntai)
-        const tanaanOnEn = viikonpaivatEn[paivaIndeksi]; // Esim. "Thursday" (Tietokantaa varten)
-        const paivaSuomeksi = viikonpaivatFi[paivaIndeksi]; // Esim. "TORSTAIN" (Nettisivua varten)
+        const paivaIndeksi = new Date().getDay();
+        const tanaanOnEn = viikonpaivatEn[paivaIndeksi];
+        const paivaSuomeksi = viikonpaivatFi[paivaIndeksi];
 
-        // Etsitään ruoka, jonka 'weekday' sarake vastaa tätä englanninkielistä päivää
         const paivanTarjous = ruoat.find(tuote => tuote.weekday === tanaanOnEn);
 
         if (paivanTarjous) {
             const kuvaSrc = paivanTarjous.image_url ? `images/${paivanTarjous.image_url}` : '';
             const kuvaHTML = kuvaSrc ? `<img src="${kuvaSrc}" alt="${paivanTarjous.name}" class="product-image">` : '';
+            
+            // LISÄTTY: Allergeenit tarjoukseen
+            const allergeenitHTML = luoAllergeenitHTML(paivanTarjous.allergens);
 
-            // Lasketaan 20% alennus 
             const normaaliHinta = paivanTarjous.price;
             const tarjousHinta = (normaaliHinta * 0.8).toFixed(2);
 
-            //lukee oikea päivä ja vanha hinta on yliviivattu
             ruokalista.innerHTML += `
                 <div class="category-section" style="margin-top: 0; margin-bottom: 40px;">
                     <h2 class="category-title" style="color: #ff6b00; border-bottom-color: #ff6b00;">
@@ -125,6 +140,7 @@ async function haeRuoatTietokannasta() {
                         <div class="product-info">
                             <h3 style="font-size: 24px;">${paivanTarjous.name}</h3>
                             <p style="font-size: 16px; color: #ddd;">${paivanTarjous.description || ''}</p>
+                            ${allergeenitHTML} <!-- NÄYTETÄÄN MERKIT TÄSSÄ -->
                             <div class="product-price">
                                 <span style="text-decoration: line-through; color: #888; font-size: 14px; margin-right: 10px;">${normaaliHinta}€</span>
                                 <span style="font-size: 22px; color: #ff6b00; font-weight: bold;">Nyt vain ${tarjousHinta}€</span>
@@ -140,15 +156,12 @@ async function haeRuoatTietokannasta() {
                 </div>
             `;
         }
+
         // ---------------------------------------------------------
-        // 2. NORMAALI RUOKALISTAN TULOSTUS (Ryhmittely)
+        // 2. NORMAALI RUOKALISTAN TULOSTUS
         // ---------------------------------------------------------
         const ryhmat = {
-            "Burgerit": [],
-            "Pääruoat": [],
-            "Lisukkeet": [],
-            "Juomat": [],
-            "Jälkiruoat": []
+            "Burgerit": [], "Pääruoat": [], "Lisukkeet": [], "Juomat": [], "Jälkiruoat": []
         };
 
         ruoat.forEach(tuote => {
@@ -163,13 +176,7 @@ async function haeRuoatTietokannasta() {
         for (const [kategoriaNimi, tuotteet] of Object.entries(ryhmat)) {
             if (tuotteet.length === 0) continue; 
 
-            // Etsitään ID:tä varten oikea englanninkielinen sana
-            let katId = "";
-            if (kategoriaNimi === "Burgerit") katId = "cat-burger";
-            if (kategoriaNimi === "Pääruoat") katId = "cat-main";
-            if (kategoriaNimi === "Lisukkeet") katId = "cat-side";
-            if (kategoriaNimi === "Juomat") katId = "cat-drink";
-            if (kategoriaNimi === "Jälkiruoat") katId = "cat-dessert";
+            let katId = "cat-" + kategoriaNimi.toLowerCase();
 
             let html = `
                 <div class="category-section" id="${katId}">
@@ -180,36 +187,32 @@ async function haeRuoatTietokannasta() {
             tuotteet.forEach(tuote => {
                 const kuvaSrc = tuote.image_url ? `images/${tuote.image_url}` : '';
                 const kuvaHTML = kuvaSrc ? `<img src="${kuvaSrc}" alt="${tuote.name}" class="product-image">` : '';
+                
+                // LISÄTTY: Allergeenit tuotekorttiin
+                const allergeenitHTML = luoAllergeenitHTML(tuote.allergens);
 
-                // --- UUSI ALENNUSLOGIIKKA ---
                 let hintaTulostus = `${tuote.price} €`; 
-                let ostoskoriHinta = tuote.price; // Oletuksena ostoskoriin menee normaali hinta
+                let ostoskoriHinta = tuote.price;
 
-                // Tarkistetaan onko tietokannassa alennushintaa
                 if (tuote.discount_price !== null && tuote.discount_price > 0) {
-                    // Yliviivataan vanha hinta ja näytetään uusi punaisena
                     hintaTulostus = `
                         <span style="text-decoration: line-through; color: #888; font-size: 0.9em;">${tuote.price} €</span> 
                         <span style="color: #ff3333; font-weight: bold; margin-left: 8px;">${tuote.discount_price} € 🔥</span>
                     `;
-                    // Vaihdetaan ostoskoriin meneväksi hinnaksi halvempi alennushinta
                     ostoskoriHinta = tuote.discount_price;
                 }
-                // ----------------------------
 
                 html += `
                     <div class="product-card">
                         <div class="product-info">
                             <h3>${tuote.name}</h3>
                             <p>${tuote.description || ''}</p>
-                            <!-- Tähän tulostuu nyt oikea hintanäkymä -->
+                            ${allergeenitHTML} <!-- NÄYTETÄÄN MERKIT TÄSSÄ -->
                             <div class="product-price">${hintaTulostus}</div>
                         </div>
                         <div class="product-image-container">
                             ${kuvaHTML}
-                            <!-- Tässä viemme ostoskoriHinta-muuttujan lisaaKoriin-funktiolle -->
-                            <button class="btn-add-product" onclick="lisaaKoriin('${tuote.name}', ${ostoskoriHinta})">
-                            <button class="btn-add-product" onclick="lisaaKoriin(${tuote.id}, '${tuote.name}', ${tuote.price})">
+                            <button class="btn-add-product" onclick="lisaaKoriin(${tuote.id}, '${tuote.name}', ${ostoskoriHinta})">
                                 <i class="fas fa-plus"></i> Lisää
                             </button>
                         </div>
