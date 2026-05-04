@@ -5,7 +5,7 @@
   "main": ".idea/dataSources/server.js",
   "scripts": {
     "start": "node .idea/dataSources/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --forceExit"
   },
   "private": true,
   "dependencies": {
@@ -13,5 +13,6 @@
     "dotenv": "^16.6.1",
     "express": "^4.19.2",
     "mysql2": "^3.22.2"
+    
   }
 }

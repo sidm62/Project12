@@ -23,12 +23,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     localStorage.setItem("user", JSON.stringify(data.user));
                     localStorage.setItem("userId", data.user.id);
 
-                    const previousPage = document.referrer;
-
-                    if (previousPage && previousPage.includes(window.location.hostname) && !previousPage.includes("register.html")) {
-                        window.location.href = previousPage;
+                    // Tarkistetaan onko käyttäjä ylläpitäjä
+                    if (data.user.role === 'ADMIN' || data.user.role === 'admin') {
+                        window.location.href = "admin.html"; // Ohjataan suoraan admin-paneeliin
                     } else {
-                        window.location.href = "Roast.html";
+                        // TAVALLINEN ASIAKAS: Alkuperäinen logiikkasi
+                        const previousPage = document.referrer;
+
+                        if (previousPage && previousPage.includes(window.location.hostname) && !previousPage.includes("register.html")) {
+                            window.location.href = previousPage;
+                        } else {
+                            window.location.href = "Roast.html";
+                        }
                     }
                 } else {
                     naytaIlmoitusModal("Kirjautuminen epäonnistui", data.message || "Tarkista käyttäjätiedot ja yritä uudelleen.", "OK");

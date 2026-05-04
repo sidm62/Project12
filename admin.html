@@ -1,10 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROAST - Hallintapaneeli</title>
+    <link rel="stylesheet" href="Roast.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
 
+<body style="background-color: #121212; color: #ffffff;">
+
+    <nav class="navbar" style="border-bottom: 2px solid #ff6b00;">
+        <div class="logo">ROAST <span style="color: white;">ADMIN</span></div>
+        <ul class="nav-links">
+            <li><a href="Roast.html" target="_blank">Näytä asiakassivu</a></li>
+            <li><a href="login.html" style="color: #ff6b00;">Kirjaudu ulos</a></li>
+        </ul>
+    </nav>
+
+    <div style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
+        <h1 style="text-align: center; margin-bottom: 40px;">Ravintolan Ohjauspaneeli</h1>
+
+        <section style="background: #2a1b12; padding: 25px; border-radius: 10px; margin-bottom: 40px; border: 1px solid #333;">
+            <h2 style="color: #ff6b00; margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 10px;">
+                <i class="fas fa-receipt"></i> Saapuneet Tilaukset
+            </h2>
+            <div id="tilaukset-lista" style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                
+            </div>
+        </section>
+
+        <section style="background: #2a1b12; padding: 25px; border-radius: 10px; border: 1px solid #333;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 20px;">
+                <h2 style="color: #ff6b00; margin: 0;">
+                    <i class="fas fa-hamburger"></i> Ruokalistan Muokkaus
+                </h2>
+                <button onclick="avaaLisaysIkkuna()" style="background: #ff6b00; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    <i class="fas fa-plus"></i> Lisää Uusi Tuote
+                </button>
+            </div>
+
+            <div id="lisays-lomake" style="display: none; background: #1a100a; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ff6b00;">
+                <h3 style="color: #ff6b00; margin-top: 0;">Lisää uusi ruoka</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <input type="text" id="uusi-nimi" placeholder="Ruoan nimi (esim. Tuplajuusto)" style="padding: 10px; border-radius: 4px; border: none; background: #eee; color: #333;">
+                    <input type="number" step="0.01" id="uusi-hinta" placeholder="Hinta (esim. 12.50)" style="padding: 10px; border-radius: 4px; border: none; background: #eee; color: #333;">
+                    <select id="uusi-kategoria" style="padding: 10px; border-radius: 4px; border: none; background: #eee; color: #333;">
+                        <option value="burger">Burger</option>
+                        <option value="main">Pääruoka</option>
+                        <option value="side">Lisuke</option>
+                        <option value="drink">Juoma</option>
+                        <option value="dessert">Jälkiruoka</option>
+                    </select>
+                    <input type="text" id="uusi-kuva" placeholder="Kuvan tiedostonimi (esim. uusikuva.jpg)" style="padding: 10px; border-radius: 4px; border: none; background: #eee; color: #333;">
+                </div>
+                <div style="margin-top: 15px;">
+                    <button onclick="tallennaUusiTuote()" style="background: #27ae60; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                        <i class="fas fa-save"></i> Tallenna Tietokantaan
+                    </button>
+                    <button onclick="suljeLisaysIkkuna()" style="background: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                        Peruuta
+                    </button>
+                </div>
+            </div>
+            <table style="width: 100%; text-align: left; border-collapse: collapse;">
+                <thead>
+                    <tr style="color: #aaa; background: #1a100a;">
+                        <th style="padding: 12px; border-bottom: 1px solid #444;">Nimi</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #444;">Kategoria</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #444;">Hinta</th>
+                        <th style="padding: 12px; border-bottom: 1px solid #444;">Toiminnot</th>
+                    </tr>
+                </thead>
+                <tbody id="tuotteet-lista">
+                    <tr><td colspan="4" style="padding: 15px; text-align: center; color: #aaa;">Ladataan ruokia tietokannasta...</td></tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+
+    <script src="admin.js"></script>
+    <div id="muokkaus-tausta" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999;" onclick="suljeMuokkausIkkuna()"></div>
+    
+    <div id="muokkaus-tausta" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999;" onclick="suljeMuokkausIkkuna()"></div>
+    
+    <div id="muokkaus-lomake" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1a100a; padding: 30px; border-radius: 10px; border: 2px solid #ff6b00; z-index: 1000; box-shadow: 0 0 20px rgba(0,0,0,0.8); width: 400px; color: white;">
+        <h3 style="color: #ff6b00; margin-top: 0; border-bottom: 1px solid #444; padding-bottom: 10px;"><i class="fas fa-edit"></i> Muokkaa Tuotetta</h3>
+        
+        <input type="hidden" id="muokkaa-id">
+        
+        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+            <div>
+                <label style="color: #aaa; font-size: 14px;">Tuotteen nimi:</label>
+                <input type="text" id="muokkaa-nimi" style="width: 100%; padding: 10px; border-radius: 4px; border: none; background: #eee; color: #333; margin-top: 5px;">
+            </div>
+            <div>
+                <label style="color: #aaa; font-size: 14px;">Normaali Hinta (€):</label>
+                <input type="number" step="0.01" id="muokkaa-hinta" style="width: 100%; padding: 10px; border-radius: 4px; border: none; background: #eee; color: #333; margin-top: 5px;">
+            </div>
+            <div>
+                <label style="color: #aaa; font-size: 14px; color: #ff6b00; font-weight: bold;">🔥 Alennushinta (€) (Jätä tyhjäksi jos ei alennusta):</label>
+                <input type="number" step="0.01" id="muokkaa-alennus" style="width: 100%; padding: 10px; border-radius: 4px; border: none; background: #fff3e0; color: #333; margin-top: 5px; border: 1px solid #ff6b00;">
+            </div>
+            <div>
+                <label style="color: #aaa; font-size: 14px;">Kategoria:</label>
+                <select id="muokkaa-kategoria" style="width: 100%; padding: 10px; border-radius: 4px; border: none; background: #eee; color: #333; margin-top: 5px;">
+                    <option value="burger">Burger</option>
+                    <option value="main">Pääruoka</option>
+                    <option value="side">Lisuke</option>
+                    <option value="drink">Juoma</option>
+                    <option value="dessert">Jälkiruoka</option>
+                </select>
+            </div>
+            <div>
+                <label style="color: #aaa; font-size: 14px;">Kuvan nimi (esim. burger.jpg):</label>
+                <input type="text" id="muokkaa-kuva" style="width: 100%; padding: 10px; border-radius: 4px; border: none; background: #eee; color: #333; margin-top: 5px;">
+            </div>
+        </div>
+        
+        <div style="margin-top: 25px; display: flex; justify-content: space-between;">
+            <button onclick="tallennaMuokkaukset()" style="background: #27ae60; color: white; border: none; padding: 12px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 48%;">
+                <i class="fas fa-save"></i> Tallenna
+            </button>
+            <button onclick="suljeMuokkausIkkuna()" style="background: #e74c3c; color: white; border: none; padding: 12px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 48%;">
+                Peruuta
+            </button>
+        </div>
+    </div>
 </body>
 </html>
