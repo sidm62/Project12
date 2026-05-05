@@ -249,9 +249,11 @@ app.get('/api/hsl', async (req, res) => {
 
 // --- PALVELIMEN KÄYNNISTYS ---
 if (require.main === module) {
-    const PORT = 3000;
-    app.listen(PORT, () => {
+    const PORT = process.env.PORT || 3000;
+    // Lisätään '0.0.0.0', jotta palvelin vastaa ulkoisiin pyyntöihin
+    app.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 ROAST-palvelin rullaa portissa ${PORT}`);
+        console.log(`Yritä yhdistää: http://10.120.36.67:${PORT}`);
     });
 }
 

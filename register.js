@@ -45,7 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (response.ok) {
                     // Rekisteröinti onnistui
-                    naytaIlmoitusModal( "Käyttäjätili luotu onnistuneesti!", "Voit nyt kirjautua sisään uudella tililläsi.", "Kirjaudu")
+                    naytaIlmoitusModal( "Käyttäjätili luotu onnistuneesti!", "Voit nyt kirjautua sisään uudella tililläsi.", "Kirjaudu",
+                        () => { window.location.href = "Roast.html"; }
+                    );
                 } else {
                     // Palvelin palautti virheen (esim. validointivirhe tai duplikaatti)
                     naytaIlmoitusModal("Rekisteröityminen epäonnistui ", "Tuntematon virhe", "OK");
