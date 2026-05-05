@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ROAST Burger - Liity kanta-asiakkaaksi | Register</title>
   <link rel="stylesheet" href="Roast.css">
+  <script src="index.js" defer></script>
   <script src="register.js" type="module" defer></script>
 </head>
 <body class="register-body">
 
 <header class="register-header">
-  <a href="../../Roast.html" class="logo">ROAST</a>
+  <a href="Roast.html" class="logo">ROAST</a>
   <h1>Liity ROAST-yhteisöön</h1>
   <p>Tilaa suosikkiburgerisi ennakkoon ja ohita jono.</p>
   <p class="lang-switch"><em>Join the ROAST community to pre-order your favorite burgers and skip the line.</em></p>
@@ -54,11 +55,21 @@
       <p>Onko sinulla jo tili? / Already have an account? <a href="login.html">Kirjaudu tästä / Login here</a></p>
     </div>
   </section>
-</main>
+  </main>
 
-<footer class="register-footer">
-  <p>&copy; 2026 ROAST Burger</p>
-</footer>
+  <div id="menuModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div id="modal-icon" style="font-size: 3rem; margin-bottom: 1rem;"></div>
+      <h2 id="modal-title"></h2>
+      <p id="modal-text"></p>
+      <div id="modal-footer" class="modal-footer">
+      </div>
+    </div>
+  </div>
+
+  <footer class="register-footer">
+    <p>&copy; 2026 ROAST Burger</p>
+  </footer>
 
 </body>
 </html>

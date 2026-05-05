@@ -1,0 +1,14 @@
+{
+  "source": {
+    "include": ["."],
+    "exclude": ["node_modules", "dokumentaatio"],
+    "includePattern": ".+\\.js$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "opts": {
+    "destination": "./dokumentaatio",
+    "recurse": true,
+    "readme": "README.md"
+  },
+  "plugins": ["plugins/markdown"]
+}
