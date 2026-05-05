@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: kassa.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: kassa.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * ROAST BURGER - KASSA &amp; TILAUS LOGIIKKA (kassa.js)
+ * Hallitsee ostoskorin näyttämistä, hinnan laskentaa (ALV 14%)
+ * sekä tilauksen lähettämistä backend-rajapintaan.
+ */
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Tarkistetaan kummalla sivulla ollaan ja alustetaan oikeat toiminnot
+    if (document.getElementById("kassa-lista")) {
+        paivitaKassaNakyma();
+    }
+
+    if (document.getElementById("final-total")) {
+        laskeLoppusumma();
+    }
+});
+
+/**
+ * Yleiskäyttöinen funktio ilmoitusikkunoiden (modal) näyttämiseen.
+ * @param {string} otsikko - Otsikko
+ * @param {string} teksti - Viesti käyttäjälle
+ * @param {string} nappiTeksti - Painikkeen teksti
+ * @param {Function} callback - Funktio joka ajetaan kun nappia painetaan
+ */
+function naytaIlmoitusModal(otsikko, teksti, nappiTeksti, callback = null) {
+    const modal = document.getElementById("menuModal");
+    const title = document.getElementById("modal-title");
+    const text = document.getElementById("modal-text");
+    const footer = document.getElementById("modal-footer");
+
+    if (!modal) return;
+
+    title.innerText = otsikko;
+    text.innerText = teksti;
+    footer.innerHTML = `&lt;button class="btn-confirm" id="modal-ok-btn" style="width: 100%;">${nappiTeksti}&lt;/button>`;
+
+    modal.style.display = "flex";
+
+    document.getElementById("modal-ok-btn").onclick = function() {
+        modal.style.display = "none";
+        if (callback) callback();
+    };
+}
+
+// --- KASSA.HTML LOGIIKKA ---
+
+/**
+ * Hakee tuotteet localStoragesta ja rakentaa ostoskorinäkymän.
+ * Laskee välisumman ja ALV 14% osuuden.
+ */
+function paivitaKassaNakyma() {
+    const kassaLista = document.getElementById("kassa-lista");
+    const valisummaElement = document.getElementById("valisumma");
+    const loppusummaElement = document.getElementById("Loppusumma");
+
+    let ostoskori = JSON.parse(localStorage.getItem('ostoskori')) || [];
+
+    if (ostoskori.length === 0) {
+        if (kassaLista) kassaLista.innerHTML = "&lt;p style='text-align:center; padding:20px;'>Ostoskorisi on tyhjä.&lt;/p>";
+        if (valisummaElement) valisummaElement.innerText = "0.00€";
+        if (loppusummaElement) loppusummaElement.innerText = "0.00";
+        return;
+    }
+
+    let valisummaYhteensa = 0;
+    if (kassaLista) kassaLista.innerHTML = "";
+
+    ostoskori.forEach((tuote, index) => {
+        const hinta = parseFloat(tuote.price);
+        // Käytetään amount-nimeä, joka on projektisi standardi
+        const maara = parseInt(tuote.amount || tuote.quantity || 1);
+        const riviSumma = hinta * maara;
+        valisummaYhteensa += riviSumma;
+
+        if (kassaLista) {
+            kassaLista.innerHTML += `
+                &lt;div class="cart-row" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr; padding: 10px 0; border-bottom: 1px solid #333; align-items: center;">
+                    &lt;span>${tuote.name}&lt;/span>
+                    &lt;span>${hinta.toFixed(2)}€&lt;/span>
+                    &lt;span>${maara}&lt;/span>
+                    &lt;span>${riviSumma.toFixed(2)}€&lt;/span>
+                    &lt;button onclick="poistaTuote(${index})" style="background:none; border:none; color:#ff4444; cursor:pointer; font-size:18px;">&amp;times;&lt;/button>
+                &lt;/div>
+            `;
+        }
+    });
+
+    // VERO POISTETTU: Loppusumma on nyt suoraan välisumma
+    const loppusumma = valisummaYhteensa;
+
+    if (valisummaElement) valisummaElement.innerText = valisummaYhteensa.toFixed(2) + "€";
+    if (loppusummaElement) loppusummaElement.innerText = loppusumma.toFixed(2);
+}
+
+/** Poistaa tuotteen korista ja päivittää näkymän heti */
+function poistaTuote(index) {
+    let ostoskori = JSON.parse(localStorage.getItem('ostoskori')) || [];
+
+    // Poistetaan tuote listasta
+    ostoskori.splice(index, 1);
+
+    // Tallennetaan muutos
+    localStorage.setItem('ostoskori', JSON.stringify(ostoskori));
+
+    // Päivitetään kassan listaus ja summat välittömästi
+    paivitaKassaNakyma();
+
+    // Päivitetään myös yläpalkin ostoskori-ikoni, jos funktio on olemassa
+    if (typeof updateCart === "function") updateCart();
+}
+
+/** Laskee summat Tilaus.html-sivulla (toimituskulut huomioiden) */
+function laskeLoppusumma() {
+    const ostoskori = JSON.parse(localStorage.getItem('ostoskori')) || [];
+
+    // Lasketaan tuotteiden summa
+    let tuoteSumma = ostoskori.reduce((sum, t) => {
+        const hinta = parseFloat(t.price) || 0;
+        const maara = parseInt(t.amount || t.quantity) || 0;
+        return sum + (hinta * maara);
+    }, 0);
+
+    // Haetaan valittu toimitustapa
+    const toimitusRadio = document.querySelector('input[name="delivery"]:checked');
+    const toimitusKulu = toimitusRadio ? parseFloat(toimitusRadio.value) : 0;
+
+    // KOKONAISSUMMA ILMAN VEROJA
+    const kokonaisSumma = tuoteSumma + toimitusKulu;
+
+    // Päivitetään käyttöliittymä
+    if(document.getElementById("cart-subtotal")) {
+        document.getElementById("cart-subtotal").innerText = tuoteSumma.toFixed(2) + " €";
+    }
+    if(document.getElementById("delivery-cost")) {
+        document.getElementById("delivery-cost").innerText = toimitusKulu.toFixed(2) + " €";
+    }
+    if(document.getElementById("final-total")) {
+        document.getElementById("final-total").innerText = kokonaisSumma.toFixed(2) + " €";
+    }
+}
+/**
+ * Lähettää valmiin tilauksen backendille.
+ * @async
+ */
+async function lahetaTilaus() {
+    const ostoskori = JSON.parse(localStorage.getItem('ostoskori')) || [];
+    const finalTotalElem = document.getElementById("final-total");
+    const summa = finalTotalElem ? parseFloat(finalTotalElem.innerText) : 0;
+
+    const maksutapa = document.querySelector('input[name="payment"]:checked')?.value || "Ei valittu";
+    const deliveryRadio = document.querySelector('input[name="delivery"]:checked');
+    const toimitustapa = deliveryRadio?.value === "0.00" ? "Nouto" : "Kuljetus";
+
+    const userJson = localStorage.getItem('user');
+    let userId = null;
+
+    if (userJson) {
+        userId = JSON.parse(userJson).id;
+    }
+
+    if (!userId) {
+        naytaIlmoitusModal("Kirjaudu sisään", "Sinun täytyy olla kirjautunut sisään lähettääksesi tilauksen.", "Kirjaudu", () => {
+            window.location.href = "login.html";
+        });
+        return;
+    }
+
+    const tilausData = {
+        userId: userId,
+        total_price: summa,
+        payment_method: maksutapa,
+        delivery_method: toimitustapa,
+        tuotteet: ostoskori
+    };
+
+    try {
+        const response = await fetch('http://localhost:3000/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(tilausData),
+        });
+
+        if (response.ok) {
+            localStorage.removeItem('ostoskori');
+            naytaIlmoitusModal("Tilaus vastaanotettu!", "Kiitos tilauksestasi! Alamme valmistaa sitä heti.", "Jatka tilaamista", () => {
+                window.location.href = "Roast.html";
+            });
+        } else {
+            naytaIlmoitusModal("Virhe", "Tilausta ei voitu käsitellä.", "OK");
+        }
+    } catch (err) {
+        console.error("Yhteysvirhe:", err);
+        naytaIlmoitusModal("Yhteysvirhe", "Palvelimeen ei saatu yhteyttä.", "OK");
+    }
+}
+
+/** Käynnistää tilausprosessin ja siirtää käyttäjän eteenpäin */
+function tilaus(event) {
+    if (event) event.preventDefault();
+
+    let ostoskori = JSON.parse(localStorage.getItem('ostoskori')) || [];
+
+    if (ostoskori.length === 0) {
+        // Jos sinulla on naytaIlmoitusModal käytössä:
+        if (typeof naytaIlmoitusModal === "function") {
+            naytaIlmoitusModal("Hups!", "Ostoskorisi on tyhjä!", "Selvä");
+        } else {
+            alert("Ostoskorisi on tyhjä!");
+        }
+        return;
+    }
+
+    // Siirrytään varsinaiselle tilauslomakkeelle
+    window.location.href = "Tilaus.html";
+}
+
+// --- MODAALIEN HALLINTA ---
+
+function closeModal() {
+    const confirmModal = document.getElementById("confirmModal");
+    if(confirmModal) confirmModal.style.display = "none";
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#avaaMuokkausIkkuna">avaaMuokkausIkkuna</a></li><li><a href="global.html#changePassword">changePassword</a></li><li><a href="global.html#closeMenuModal">closeMenuModal</a></li><li><a href="global.html#db">db</a></li><li><a href="global.html#haeRuoatAdminTaulukkoon">haeRuoatAdminTaulukkoon</a></li><li><a href="global.html#haeRuoatTietokannasta">haeRuoatTietokannasta</a></li><li><a href="global.html#haeTilauksetAdminPaneeliin">haeTilauksetAdminPaneeliin</a></li><li><a href="global.html#lahetaTilaus">lahetaTilaus</a></li><li><a href="global.html#laskeLoppusumma">laskeLoppusumma</a></li><li><a href="global.html#lisaaKoriin">lisaaKoriin</a></li><li><a href="global.html#lisaaMuokattuTuote">lisaaMuokattuTuote</a></li><li><a href="global.html#logout">logout</a></li><li><a href="global.html#muutaMaara">muutaMaara</a></li><li><a href="global.html#naytaIlmoitusModal">naytaIlmoitusModal</a></li><li><a href="global.html#naytaTilausHistoria">naytaTilausHistoria</a></li><li><a href="global.html#orderAgain">orderAgain</a></li><li><a href="global.html#paivitaKassaNakyma">paivitaKassaNakyma</a></li><li><a href="global.html#paivitaTilausStatus">paivitaTilausStatus</a></li><li><a href="global.html#poistaTuote">poistaTuote</a></li><li><a href="global.html#savePassword">savePassword</a></li><li><a href="global.html#scrollToCategory">scrollToCategory</a></li><li><a href="global.html#tallennaMuokkaukset">tallennaMuokkaukset</a></li><li><a href="global.html#tallennaUusiTuote">tallennaUusiTuote</a></li><li><a href="global.html#tilaus">tilaus</a></li><li><a href="global.html#tuotteet">tuotteet</a></li><li><a href="global.html#updateCart">updateCart</a></li><li><a href="global.html#updatenNavBar">updatenNavBar</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue May 05 2026 15:44:16 GMT+0300 (Itä-Euroopan kesäaika)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
