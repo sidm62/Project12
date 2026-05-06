@@ -22,17 +22,18 @@ Sovellus pyörii koulun eCloud-palvelimella. Voit testata sitä livenä tääll�
 
 ## 4. Testausohjeet (Näin löydät kaikki ominaisuudet)
 Olemme rakentaneet paljon ominaisuuksia, joiden testaamiseksi pyydämme seuraamaan näitä askelia:
-
 1. **HSL-rajapinta:** Avaa yllä oleva linkki etusivulle. Selaa hieman alaspäin, niin näet reaaliaikaisesti päivittyvät bussien aikataulut.
 2. **Käyttäjätilin luonti:** Paina ylävalikosta "Rekisteröidy" ja luo itsellesi testitunnus.
 3. **Kirjautuminen:** Kirjaudu sisään juuri luomillasi tunnuksilla.
 4. **Tilaaminen:** Mene "Menu"-välilehdelle. Huomaa dynaamiset allergeenimerkit ja alennukset. Lisää pari tuotetta ostoskoriin.
 5. **Kassa:** Mene ostoskoriin ja lähetä tilaus.
 6. **Omat tiedot:** Valikosta pääset profiiliisi, jonne äsken tekemäsi tilaus on nyt tallentunut.
-7. **Palaute:** Testaa lähettää meille viesti Palaute/Ota yhteyttä -lomakkeen kautta.
-8. **Admin-näkymä:** Mene osoitteeseen `http://10.120.36.67/admin.html`. Täältä näet äsken tekemäsi tilauksen ja lähettämäsi palautteen ylläpitäjän silmin.
+7. **Admin-näkymä:** Mene osoitteeseen `http://10.120.36.67/admin.html`. Täältä näet äsken tekemäsi tilauksen ja lähettämäsi palautteen ylläpitäjän silmin.
 
-## 5. Kehittäjille (Asennus omalle koneelle)
+### 5. Anna palautetta
+Kun olet testannut sovelluksen, täytäthän lyhyen palautelomakkeemme täällä: [https://docs.google.com/forms/d/e/1FAIpQLSeA_tIZfDcyUKfjEnXpRNjGMCA_nUQBiXBlUExGTpquBliGug/viewform?usp=header]
+
+## 6. Kehittäjille (Asennus omalle koneelle)
 Jos haluat ajaa koodia paikallisesti oman koneesi localhostissa:
 1. Kloonaa tämä repositorio koneellesi.
 2. Varmista, että asennettuna on Node.js.
