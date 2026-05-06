@@ -44,21 +44,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Rekisteröinti onnistui
-                    naytaIlmoitusModal( "Käyttäjätili luotu onnistuneesti!", "Voit nyt kirjautua sisään uudella tililläsi.", "Kirjaudu",
-                        () => { window.location.href = "Roast.html"; }
-                    );
+                    // Tallennetaan käyttäjätiedot automaattista kirjautumista varten
+                    if (data.user) {
+                        localStorage.setItem("user", JSON.stringify(data.user));
+                    }
+
+                    naytaIlmoitusModal("Tervetuloa!", "Käyttäjätili luotu. Olet nyt kirjautunut sisään.", "Jatka");
+
+                    // Asetetaan siirtyminen etusivulle vasta kun OK-nappia painetaan
+                    const footer = document.getElementById("modal-footer");
+                    footer.onclick = function(event) {
+                        if (event.target.tagName === 'BUTTON') {
+                            window.location.href = "Roast.html";
+                        }
+                    };
                 } else {
-                    // Palvelin palautti virheen (esim. validointivirhe tai duplikaatti)
-                    naytaIlmoitusModal("Rekisteröityminen epäonnistui ", "Tuntematon virhe", "OK");
+                    naytaIlmoitusModal("Rekisteröityminen epäonnistui", data.error || "Tuntematon virhe", "OK");
                 }
             } catch (error) {
-                // Verkkovirheet tai palvelin alhaalla
-                console.error("Yhteysvirhe rekisteröinnissä: ", error);
-                naytaIlmoitusModal("Palvelimeen ei saatu yhteyttä" ,"Yritä myöhemmin uudelleen.", "OK");
+                console.error("Yhteysvirhe: ", error);
+                naytaIlmoitusModal("Palvelimeen ei saatu yhteyttä", "Yritä myöhemmin uudelleen.", "OK");
             }
         });
     } else {
-        naytaIlmoitusModal("Rekisteröitymislomaketta ei löytynyt sivulta!", "","OK");
+        console.error("Rekisteröitymislomaketta ei löytynyt!");
     }
 });

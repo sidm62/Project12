@@ -8,14 +8,22 @@
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
-    const userId = localStorage.getItem("userId");
 
-    // Estetään pääsy profiiliin ilman kirjautumista
-    if (!userId) {
-        console.log("Käyttäjä-ID puuttuu, ohjataan kirjautumiseen.");
+    const userJson = localStorage.getItem("user");
+
+
+    if (!userJson) {
+        console.log("Käyttäjätietoja ei löydy, ohjataan kirjautumiseen.");
         window.location.href = "login.html";
         return;
     }
+
+
+    const userObj = JSON.parse(userJson);
+    const userId = userObj.id;
+
+
+    localStorage.setItem("userId", userId);
 
     try {
         const response = await fetch(`http://localhost:3000/api/auth/user/${userId}`);

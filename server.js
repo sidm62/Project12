@@ -41,9 +41,21 @@ app.post('/api/auth/register', (req, res) => {
     db.query(sql, [username, email, password], (err, result) => {
         if (err) {
             console.error(err);
+            // Tarkistetaan onko sähköposti tai käyttäjänimi jo varattu
+            if (err.code === 'ER_DUP_ENTRY') {
+                return res.status(400).json({ error: "Käyttäjänimi tai sähköposti on jo käytössä" });
+            }
             return res.status(500).json({ error: "Virhe rekisteröinnissä" });
         }
-        res.status(201).json({ message: "Rekisteröityminen onnistui" });
+
+
+        res.status(201).json({
+            message: "Rekisteröityminen onnistui",
+            user: {
+                id: result.insertId,
+                username: username
+            }
+        });
     });
 });
 
