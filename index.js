@@ -115,7 +115,23 @@ function updatenNavBar() {
     }
 }
 
-// --- RUOKALISTAN HAKU JA GENEROINTI ---
+// --- APUFUNKTIO RUOKAVALIOMERKINNÖILLE ---
+function luoAllergeenitHTML(allergeeniTeksti) {
+    if (!allergeeniTeksti) return "";
+    const lista = allergeeniTeksti.split(",").map(s => s.trim());
+    let html = '<div class="allergen-container" style="display: flex; align-items: center; gap: 4px;">';
+    
+    lista.forEach((merkki, indeksi) => {
+        html += `<span class="allergen-badge ${merkki}">${merkki}</span>`;
+        // Lisätään pilkku, jos kyseessä ei ole listan viimeinen merkki
+        if (indeksi < lista.length - 1) {
+            html += '<span style="color: white; font-weight: bold;">,</span>';
+        }
+    });
+    
+    html += '</div>';
+    return html;
+}
 
 /**
  * Hakee tuotteet backendiltä, generoi päivän tarjouksen ja ryhmittelee muun listan.
@@ -140,20 +156,25 @@ async function haeRuoatTietokannasta() {
         // 1. PÄIVÄN TARJOUS
         if (paivanTarjous) {
             const tarjousHinta = (paivanTarjous.price * 0.8).toFixed(2);
+            const allergeenitHTML = luoAllergeenitHTML(paivanTarjous.allergens);
+            
             ruokalista.innerHTML += `
                 <div class="category-section" style="margin-bottom: 40px;">
                     <h2 class="category-title" style="color: #ff6b00;">🌟 ${viikonpaivatFi[paivaIndeksi]} TARJOUS 🌟</h2>
                     <div class="product-card highlight-card">
-                        <img src="images/${paivanTarjous.image_url}" alt="${paivanTarjous.name}" class="product-image">
                         <div class="product-info">
                             <h3>${paivanTarjous.name}</h3>
                             <p>${paivanTarjous.description || ''}</p>
+                            ${allergeenitHTML}
                             <div class="product-price">
-                                <span class="old-price-strike">${paivanTarjous.price}€</span>
-                                <span class="new-price">${tarjousHinta}€</span>
+                                <span class="old-price-strike" style="text-decoration: line-through; color: #888; margin-right: 10px;">${paivanTarjous.price}€</span>
+                                <span class="new-price" style="color: #ff6b00; font-weight: bold;">${tarjousHinta}€</span>
                             </div>
                         </div>
-                        <button class="btn-add-product" onclick="lisaaKoriin(${paivanTarjous.id}, '${paivanTarjous.name}', ${tarjousHinta})">Lisää</button>
+                        <div class="product-image-container">
+                            <img src="images/${paivanTarjous.image_url}" alt="${paivanTarjous.name}" class="product-image">
+                            <button class="btn-add-product" onclick="lisaaKoriin(${paivanTarjous.id}, '${paivanTarjous.name}', ${tarjousHinta})">Lisää</button>
+                        </div>
                     </div>
                 </div>`;
         }
@@ -170,15 +191,31 @@ async function haeRuoatTietokannasta() {
                             <div class="product-grid">`;
 
             kategoriaTuotteet.forEach(tuote => {
+                const allergeenitHTML = luoAllergeenitHTML(tuote.allergens);
+                
+                let hintaTulostus = `${tuote.price} €`;
+                let ostoskoriHinta = tuote.price;
+
+                if (tuote.discount_price !== null && tuote.discount_price > 0) {
+                    hintaTulostus = `
+                        <span style="text-decoration: line-through; color: #888; font-size: 0.9em;">${tuote.price} €</span> 
+                        <span style="color: #ff3333; font-weight: bold; margin-left: 8px;">${tuote.discount_price} € 🔥</span>
+                    `;
+                    ostoskoriHinta = tuote.discount_price;
+                }
+
                 html += `
                     <div class="product-card">
-                        <img src="images/${tuote.image_url}" alt="${tuote.name}" class="product-image">
                         <div class="product-info">
                             <h3>${tuote.name}</h3>
                             <p>${tuote.description || ''}</p>
-                            <div class="product-price">${tuote.price}€</div>
+                            ${allergeenitHTML}
+                            <div class="product-price">${hintaTulostus}</div>
                         </div>
-                        <button class="btn-add-product" onclick="lisaaKoriin(${tuote.id}, '${tuote.name}', ${tuote.price})">Lisää</button>
+                        <div class="product-image-container">
+                            <img src="images/${tuote.image_url}" alt="${tuote.name}" class="product-image">
+                            <button class="btn-add-product" onclick="lisaaKoriin(${tuote.id}, '${tuote.name}', ${ostoskoriHinta})">Lisää</button>
+                        </div>
                     </div>`;
             });
             html += `</div></div>`;
@@ -232,3 +269,55 @@ function naytaIlmoitusModal(otsikko, teksti, nappiTeksti, callback = null) {
         if (callback) callback();      // Jos callback annettu, suoritetaan se
     };
 }
+
+// --- HSL API: AIKATAULUJEN HAKU (OMALTA PALVELIMELTA) ---
+async function haeHSL() {
+    const listaElementti = document.getElementById("hsl-lista");
+    
+    if (!listaElementti) {
+        return; 
+    }
+
+    try {
+        const response = await fetch("http://localhost:3000/api/hsl");
+        
+        // SUOJAMUURI: Jos backend palauttaa virheen (kuten 500), heitetään virhe heti
+        if (!response.ok) {
+            throw new Error(`Palvelinvirhe: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // SUOJAMUURI: Varmistetaan, että HSL-data on olemassa ennen sen lukemista
+        if (!data || !data.data || !data.data.stop) {
+            throw new Error("Datan muoto on väärä tai avain ei ole vielä aktiivinen.");
+        }
+
+        const lahdot = data.data.stop.stoptimesWithoutPatterns;
+        
+        listaElementti.innerHTML = ""; // Tyhjennetään teksti
+
+        lahdot.forEach(lahto => {
+            const tunnit = Math.floor(lahto.realtimeDeparture / 3600) % 24;
+            const minuutit = Math.floor((lahto.realtimeDeparture % 3600) / 60);
+            const aika = `${tunnit.toString().padStart(2, '0')}:${minuutit.toString().padStart(2, '0')}`;
+            
+            // Tehdään tulostuksesta asiakkaalle selkeämpi ja visuaalisempi
+            listaElementti.innerHTML += `
+                <li style="padding: 10px 0; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 1.1em; color: #ff6b00;">🚌 <strong>${aika}</strong></span>
+                    <span style="font-size: 0.9em; color: #aaa;">Suunta: ${lahto.headsign}</span>
+                </li>
+            `;
+        });
+
+    } catch (error) {
+        console.error("Virhe HSL-datan haussa:", error);
+        if (listaElementti) {
+            listaElementti.innerHTML = "<li style='color: #e74c3c;'>Aikatauluja ei voitu ladata (Palvelinvirhe).</li>";
+        }
+    }
+}
+
+// Suoritetaan haku automaattisesti, kun sivu ladataan
+document.addEventListener("DOMContentLoaded", haeHSL);

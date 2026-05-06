@@ -237,12 +237,19 @@ app.put('/api/orders/:id/status', (req, res) => {
 
 // --- ULKOISET API-REITIT ---
 
-/**
- * HSL Aikataulu-proxy. Hakee pysäkin reaaliaikaiset lähtöajat.
- * @route GET /api/hsl
- */
+// --- HSL API REITTI (BACKEND PROXY) ---
 app.get('/api/hsl', async (req, res) => {
-    const query = `{ stop(id: "HSL:1040129") { name stoptimesWithoutPatterns(numberOfDepartures: 5) { realtimeDeparture headsign } } }`;
+    const query = `
+    {
+      stop(id: "HSL:1040129") {
+        name
+        stoptimesWithoutPatterns(numberOfDepartures: 5) {
+          realtimeDeparture
+          headsign
+        }
+      }
+    }`;
+
     try {
         const response = await fetch("https://api.digitransit.fi/routing/v2/hsl/gtfs/v1", {
             method: "POST",
@@ -250,11 +257,20 @@ app.get('/api/hsl', async (req, res) => {
                 "Content-Type": "application/json",
                 "digitransit-subscription-key": "7767ea6f9e7a4ef7a60e7666499c73bf"
             },
-            body: JSON.stringify({ query })
+            body: JSON.stringify({ query: query })
         });
+
+        if (!response.ok) {
+            const virheTeksti = await response.text();
+            console.error("HSL Palvelimen antama virheviesti:", virheTeksti);
+            return res.status(response.status).json({ message: "HSL rajapinta palautti virheen", details: virheTeksti });
+        }
+
         const data = await response.json();
         res.json(data);
+
     } catch (error) {
+        console.error("Virhe HSL-tiedon hakemisessa backendissä:", error);
         res.status(500).json({ message: "Palvelinvirhe aikatauluja haettaessa" });
     }
 });
@@ -262,11 +278,10 @@ app.get('/api/hsl', async (req, res) => {
 // --- PALVELIMEN KÄYNNISTYS ---
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
-    // Lisätään '0.0.0.0', jotta palvelin vastaa ulkoisiin pyyntöihin
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 ROAST-palvelin rullaa portissa ${PORT}`);
         console.log(`Yritä yhdistää: http://10.120.36.67:${PORT}`);
     });
 }
 
-module.exports = app; // Viedään testausta varten
+module.exports = app;

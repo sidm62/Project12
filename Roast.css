@@ -839,4 +839,127 @@ input[type="submit"]:hover {
     background: #1a1a1a;
     color: white;
     box-sizing: border-box; /* Estää kenttää "karkaamasta" reunojen yli */
+}´
+/* --- AMMATTIMAISET KORJAUKSET ROAST-SIVULLE --- */
+
+/* 1. Yleinen Brändiväritys ja Fontit */
+:root {
+  --main-orange: #ff6b00; /* Se sama oranssi, jota käytämme jo napeissa */
+  --light-gray: #ddd;
 }
+
+/* Haetaan Googlelta tyylikäs ja jämäkkä fontti otsikoille */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600&family=Open+Sans&display=swap');
+
+body {
+  font-family: 'Open Sans', sans-serif; /* Puhdas perusfontti */
+  color: white;
+}
+
+/* Muutetaan pääotsikot oransseiksi ja käytetään tyylikästä Oswald-fonttia */
+h1, h2, h3, .logo {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase; /* Tekee otsikoista jämäkät */
+  letter-spacing: 1px;
+}
+
+h2.category-title {
+  color: var(--main-orange);
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2em;
+}
+
+/* 2. Menu-korttien Moderni Layout */
+.product-grid {
+  display: flex;
+  flex-direction: column; /* Järjestetään burgerit allekkain nätiksi listaksi */
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.product-card {
+  display: flex; /* Kuva ja tiedot rinnakkain (Flexbox taikaa) */
+  flex-direction: row; /* Tämä tekee siitä horisontaalisen */
+  align-items: center;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5); /* Lisää syvyyttä */
+  padding: 15px;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-5px); /* Pieni nosto-efekti kun hiiri on päällä */
+  border-color: var(--main-orange);
+}
+
+.product-image-container {
+  width: 150px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column; /* Järjestää kuvan ylös ja napin siististi sen alle */
+  align-items: center;
+  gap: 12px; /* Tekee nätin välin kuvan ja napin väliin */
+  margin-left: 20px; /* Pitää kuva-alueen irti teksteistä */
+}
+
+.product-image {
+  width: 150px;
+  height: 150px;
+  object-fit: contain; /* TÄMÄ ON SE KORJAUS: 'contain' näyttää koko kuvan */
+  border-radius: 8px;
+}
+
+.product-info {
+  flex-grow: 1;
+  text-align: left; /* Teksti siististi vasemmalle */
+}
+
+.product-info h3 {
+  margin-top: 0;
+  margin-bottom: 5px;
+  color: white;
+}
+
+.product-info p {
+  color: #bbb;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.product-price {
+  font-size: 1.3em;
+  font-weight: bold;
+  color: var(--main-orange);
+  margin-top: 10px;
+}
+
+/* 3. Allergeenimerkkien Väritys (VÄRIT!) */
+.allergen-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.allergen-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 12px; /* Tekee "pilleri" -muodon */
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: white;
+  text-transform: uppercase;
+}
+
+/* Annetaan jokaiselle merkille oma, selkeä väri */
+.allergen-badge.V { background-color: #2ecc71; } /* Vihreä (Vegaaninen) */
+.allergen-badge.L { background-color: #3498db; } /* Sininen (Laktoositon) */
+.allergen-badge.G { background-color: #e67e22; } /* Oranssi (Gluteeniton) */
+.allergen-badge.M { background-color: #9b59b6; } /* Liila (Maidoton) */
