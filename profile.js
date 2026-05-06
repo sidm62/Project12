@@ -55,12 +55,12 @@ async function savePassword() {
     const confirmPassword = document.getElementById("confirm-password").value;
 
     if (!passwordChange || !confirmPassword) {
-        alert("Syötä uusi salasana ja vahvista se.");
+        naytaIlmoitusModal("Syötä uusi salasana ja vahvista se.","","OK");
         return;
     }
 
     if (passwordChange !== confirmPassword) {
-        alert("Salasanat eivät täsmää!");
+        naytaIlmoitusModal("Salasanat eivät täsmää!","","OK");
         return;
     }
 
@@ -72,11 +72,22 @@ async function savePassword() {
         });
 
         if (response.ok) {
-            alert("Salasana vaihdettu onnistuneesti!");
-            location.reload(); // Päivitetään sivu ja nollataan lomake
+            naytaIlmoitusModal("Salasana vaihdettu onnistuneesti!", "", "OK");
+
+            const footer = document.getElementById("modal-footer");
+
+
+            footer.onclick = function(event) {
+                // Jos klikattu elementti on painike (button)
+                if (event.target.tagName === 'BUTTON') {
+                    location.reload();
+                }
+            };
+
         } else {
             const data = await response.json();
-            alert("Virhe: " + (data.message || "Salasanaa ei voitu vaihtaa."));
+            naytaIlmoitusModal("Virhe: " ,"Salasanaa ei voitu vaihtaa.","OK");
+
         }
     } catch (error) {
         console.error('Virhe salasanan vaihdossa:', error);
