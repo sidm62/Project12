@@ -276,7 +276,7 @@ app.put('/api/orders/:id/status', (req, res) => {
 app.get('/api/hsl', async (req, res) => {
     const query = `
     {
-      stop(id: "HSL:1040129") {
+      stop(id: "HSL:1020105") {
         name
         stoptimesWithoutPatterns(numberOfDepartures: 5) {
           realtimeDeparture

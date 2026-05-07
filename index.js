@@ -279,7 +279,11 @@ async function haeHSL() {
     }
 
     try {
-        const response = await fetch("http://10.120.36.67/api/hsl");
+        const baseUrl = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') 
+        ? 'http://localhost:3000' 
+        : 'http://10.120.36.67:3000';
+
+const response = await fetch(`${baseUrl}/api/hsl`);
         
         // SUOJAMUURI: Jos backend palauttaa virheen (kuten 500), heitetään virhe heti
         if (!response.ok) {
@@ -306,7 +310,7 @@ async function haeHSL() {
             listaElementti.innerHTML += `
                 <li style="padding: 10px 0; border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 1.1em; color: #ff6b00;">🚌 <strong>${aika}</strong></span>
-                    <span style="font-size: 0.9em; color: #aaa;">Suunta: ${lahto.headsign}</span>
+                    <span style="font-size: 0.9em; color: #aaa;">Suunta: ${lahto.headsign} (Jää pois Sörnäisissä)</span>
                 </li>
             `;
         });
