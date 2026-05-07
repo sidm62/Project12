@@ -58,7 +58,7 @@ async function haeRuoatAdminTaulukkoon() {
         console.error("Virhe ladattaessa tuotteita:", error);
     }
 }
-
+//dwo
 /**
  * Poistaa tuotteen tietokannasta ID:n perusteella.
  * @async
