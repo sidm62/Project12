@@ -175,7 +175,7 @@ async function naytaTilausHistoria() {
                 hasHistory = true;
                 historiaHtml += `
                     <li class="history-item" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding: 10px 0;">
-                        <div>
+                     <div>
                             <strong>Tilaus #${order.id} | ${order.date} | ${order.summa.toFixed(2)}€</strong><br>
                             <small>${tuotteetTeksti}</small>
                         </div>
