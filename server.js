@@ -8,6 +8,7 @@ require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -270,6 +271,13 @@ app.put('/api/orders/:id/status', (req, res) => {
     });
 });
 
+
+
+// Ohjaa etusivulle saapuvat Roast.html-tiedostoon
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'Roast.html'));
+});
+
 // --- ULKOISET API-REITIT ---
 
 // --- HSL API REITTI (BACKEND PROXY) ---
@@ -312,7 +320,7 @@ app.get('/api/hsl', async (req, res) => {
 
 // --- PALVELIMEN KÄYNNISTYS ---
 if (require.main === module) {
-    const PORT = process.env.PORT || 3000;
+    const PORT = process.env.PORT || 80;
     app.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 ROAST-palvelin rullaa portissa ${PORT}`);
         console.log(`Yritä yhdistää: http://10.120.36.67:${PORT}`);
