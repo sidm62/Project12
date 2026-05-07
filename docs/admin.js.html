@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: admin.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: admin.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * ROAST BURGER - ADMIN PANEL LOGIIKKA
+ * Hallitsee tuotteiden CRUD-toimintoja (Create, Read, Update, Delete)
+ * sekä tilausten reaaliaikaista tilaseurantaa.
+ */
+
+// Ladataan tuotteet ja tilaukset heti, kun sivun sisältö on latautunut
+document.addEventListener("DOMContentLoaded", () => {
+    haeRuoatAdminTaulukkoon();
+    haeTilauksetAdminPaneeliin();
+});
+
+// --- TUOTTEIDEN HALLINTA (CRUD) ---
+
+/**
+ * Hakee kaikki tuotteet tietokannasta ja rakentaa niistä hallintataulukon.
+ * Huomioi alennushinnat ja näyttää ne visuaalisesti (yliviivaus).
+ * @async
+ */
+async function haeRuoatAdminTaulukkoon() {
+    try {
+        const response = await fetch("/api/products");
+        const ruoat = await response.json();
+
+        const taulukko = document.getElementById("tuotteet-lista");
+        if (!taulukko) return;
+        taulukko.innerHTML = "";
+
+        ruoat.forEach(tuote => {
+            // Tarkistetaan alennushinta visuaalista esitystä varten
+            let hintaTulostus = `${tuote.price} €`;
+
+            if (tuote.discount_price !== null &amp;&amp; tuote.discount_price > 0) {
+                hintaTulostus = `
+                    &lt;span style="text-decoration: line-through; color: #888; font-size: 12px; margin-right: 5px;">${tuote.price} €&lt;/span> 
+                    &lt;span style="color: #ff3333; font-weight: bold;">${tuote.discount_price} € 🔥&lt;/span>`;
+            }
+
+            const rivi = `
+                &lt;tr style="border-bottom: 1px solid #444;">
+                    &lt;td style="padding: 12px;">&lt;b>${tuote.name}&lt;/b>&lt;/td>
+                    &lt;td style="padding: 12px; text-transform: capitalize;">${tuote.category || '-'}&lt;/td>
+                    &lt;td style="padding: 12px; color: #ff6b00; font-weight: bold;">${hintaTulostus}&lt;/td>
+                    &lt;td style="padding: 12px;">
+                        &lt;button onclick="avaaMuokkausIkkuna(${tuote.id}, '${tuote.name}', ${tuote.price}, '${tuote.category}', '${tuote.image_url}', ${tuote.discount_price || null})" 
+                                style="background: #333; color: white; border: 1px solid #555; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                            &lt;i class="fas fa-edit">&lt;/i> Muokkaa
+                        &lt;/button>
+                        &lt;button onclick="poistaTuote(${tuote.id})" 
+                                style="background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                            &lt;i class="fas fa-trash">&lt;/i> Poista
+                        &lt;/button>
+                    &lt;/td>
+                &lt;/tr>`;
+            taulukko.innerHTML += rivi;
+        });
+    } catch (error) {
+        console.error("Virhe ladattaessa tuotteita:", error);
+    }
+}
+//dwo
+/**
+ * Poistaa tuotteen tietokannasta ID:n perusteella.
+ * @async
+ * @param {number} id - Tuotteen yksilöllinen tunniste.
+ */
+async function poistaTuote(id) {
+    if (!confirm("Haluatko varmasti poistaa tämän tuotteen?")) return;
+
+    try {
+        const response = await fetch(`/api/products/${id}`, {
+            method: "DELETE"
+        });
+
+        if (response.ok) {
+            haeRuoatAdminTaulukkoon(); // Päivitetään lista välittömästi
+        } else {
+            alert("Poistaminen epäonnistui palvelimella.");
+        }
+    } catch (error) {
+        console.error("Virhe poistossa:", error);
+    }
+}
+
+/**
+ * Kerää tiedot lisäyslomakkeelta ja lähettää uuden tuotteen palvelimelle.
+ * @async
+ */
+async function tallennaUusiTuote() {
+    const nimi = document.getElementById("uusi-nimi").value;
+    const hinta = document.getElementById("uusi-hinta").value;
+    const kategoria = document.getElementById("uusi-kategoria").value;
+    const kuva = document.getElementById("uusi-kuva").value;
+
+    if (!nimi || !hinta) {
+        alert("Täytä vähintään nimi ja hinta!");
+        return;
+    }
+
+    const uusiTuote = { name: nimi, price: parseFloat(hinta), category: kategoria, image_url: kuva };
+
+    try {
+        const response = await fetch("/api/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(uusiTuote)
+        });
+
+        if (response.ok) {
+            suljeLisaysIkkuna();
+            haeRuoatAdminTaulukkoon();
+            // Tyhjennetään kentät
+            document.getElementById("uusi-nimi").value = "";
+            document.getElementById("uusi-hinta").value = "";
+        }
+    } catch (error) {
+        console.error("Virhe tallennuksessa:", error);
+    }
+}
+
+/**
+ * Avaa muokkausikkunan ja täyttää sen tuotteen nykyisillä tiedoilla.
+ * @param {number} id - Tuotteen ID
+ * @param {string} nimi - Tuotteen nimi
+ * @param {number} hinta - Tuotteen hinta
+ * @param {string} kategoria - Tuotteen kategoria
+ * @param {string} kuva - Tuotteen kuva-URL
+ * @param {number|null} alennus - Tuotteen alennushinta
+ */
+function avaaMuokkausIkkuna(id, nimi, hinta, kategoria, kuva, alennus) {
+    document.getElementById("muokkaa-id").value = id;
+    document.getElementById("muokkaa-nimi").value = nimi;
+    document.getElementById("muokkaa-hinta").value = hinta;
+    document.getElementById("muokkaa-kategoria").value = kategoria;
+    document.getElementById("muokkaa-kuva").value = kuva !== 'null' ? kuva : '';
+    document.getElementById("muokkaa-alennus").value = alennus !== null ? alennus : '';
+
+    document.getElementById("muokkaus-tausta").style.display = "block";
+    document.getElementById("muokkaus-lomake").style.display = "block";
+}
+
+/**
+ * Lähettää päivitetyt tiedot palvelimelle muokkauslomakkeelta.
+ * @async
+ */
+async function tallennaMuokkaukset() {
+    const id = document.getElementById("muokkaa-id").value;
+    const alennusKentta = document.getElementById("muokkaa-alennus").value;
+
+    const paivitettyTuote = {
+        name: document.getElementById("muokkaa-nimi").value,
+        price: parseFloat(document.getElementById("muokkaa-hinta").value),
+        category: document.getElementById("muokkaa-kategoria").value,
+        image_url: document.getElementById("muokkaa-kuva").value,
+        discount_price: alennusKentta ? parseFloat(alennusKentta) : null
+    };
+
+    try {
+        const response = await fetch(`/api/products/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(paivitettyTuote)
+        });
+
+        if (response.ok) {
+            suljeMuokkausIkkuna();
+            haeRuoatAdminTaulukkoon();
+        } else {
+            alert("Virhe tallennuksessa!");
+        }
+    } catch (error) {
+        console.error("Virhe muokkauksessa:", error);
+    }
+}
+
+// --- TILAUSTEN HALLINTA ---
+
+/**
+ * Hakee kaikki saapuneet tilaukset ja rakentaa niistä hallintakortit.
+ * @async
+ */
+async function haeTilauksetAdminPaneeliin() {
+    try {
+        const response = await fetch("/api/orders");
+        const tilaukset = await response.json();
+
+        const laatikko = document.getElementById("tilaukset-lista");
+        if (!laatikko) return;
+        laatikko.innerHTML = "";
+
+        if (tilaukset.length === 0) {
+            laatikko.innerHTML = "&lt;p style='color: #aaa;'>Ei saapuneita tilauksia.&lt;/p>";
+            return;
+        }
+
+        tilaukset.forEach(tilaus => {
+            let toimintoNapit = "";
+            let statusVari = "#aaa";
+
+            // Määritetään napit ja värit tilauksen vaiheen mukaan
+            if (tilaus.status === 'received' || tilaus.status === 'Vastaanotettu') {
+                statusVari = "#e74c3c";
+                toimintoNapit = `&lt;button onclick="paivitaTilausStatus(${tilaus.id}, 'Valmistuksessa')" style="background: #f39c12; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer;">Siirrä valmistukseen&lt;/button>`;
+            } else if (tilaus.status === 'Valmistuksessa') {
+                statusVari = "#f39c12";
+                toimintoNapit = `&lt;button onclick="paivitaTilausStatus(${tilaus.id}, 'Valmis')" style="background: #27ae60; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer;">Merkitse Valmiiksi&lt;/button>`;
+            } else if (tilaus.status === 'Valmis') {
+                statusVari = "#27ae60";
+                toimintoNapit = `&lt;span style="color: #27ae60; font-weight: bold;">&lt;i class="fas fa-check">&lt;/i> Tilaus toimitettu&lt;/span>`;
+            }
+
+            const tilausKortti = `
+                &lt;div style="border: 1px solid #444; padding: 15px; border-radius: 8px; background: #222; margin-bottom: 10px;">
+                    &lt;div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px;">
+                        &lt;h4 style="margin: 0; color: #ff6b00;">Tilaus #${tilaus.id}&lt;/h4>
+                        &lt;span style="color: ${statusVari}; font-weight: bold;">Tila: ${tilaus.status}&lt;/span>
+                    &lt;/div>
+                    &lt;p style="margin: 5px 0; color: #ddd;">Yhteensä: &lt;b>${tilaus.total_price} €&lt;/b>&lt;/p>
+                    &lt;div style="margin-top: 15px; text-align: right;">
+                        ${toimintoNapit}
+                    &lt;/div>
+                &lt;/div>`;
+            laatikko.innerHTML += tilausKortti;
+        });
+    } catch (error) {
+        console.error("Virhe tilausten haussa:", error);
+    }
+}
+
+/**
+ * Päivittää tilauksen statuksen palvelimelle.
+ * @async
+ * @param {number} orderId - Tilauksen ID
+ * @param {string} uusiStatus - Uusi tila (esim. 'Valmistuksessa')
+ */
+async function paivitaTilausStatus(orderId, uusiStatus) {
+    try {
+        const response = await fetch(`/api/orders/${orderId}/status`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: uusiStatus })
+        });
+
+        if (response.ok) {
+            haeTilauksetAdminPaneeliin(); // Päivitetään näkymä heti
+        } else {
+            alert("Virhe statuksen päivityksessä.");
+        }
+    } catch (error) {
+        console.error("Virhe:", error);
+    }
+}
+
+// --- APUFUNKTIOT IKKUNOIDEN HALLINTAAN ---
+
+function avaaLisaysIkkuna() {
+    document.getElementById("lisays-lomake").style.display = "block";
+}
+
+function suljeLisaysIkkuna() {
+    document.getElementById("lisays-lomake").style.display = "none";
+}
+
+function suljeMuokkausIkkuna() {
+    document.getElementById("muokkaus-tausta").style.display = "none";
+    document.getElementById("muokkaus-lomake").style.display = "none";
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#avaaMuokkausIkkuna">avaaMuokkausIkkuna</a></li><li><a href="global.html#changePassword">changePassword</a></li><li><a href="global.html#closeMenuModal">closeMenuModal</a></li><li><a href="global.html#db">db</a></li><li><a href="global.html#haeRuoatAdminTaulukkoon">haeRuoatAdminTaulukkoon</a></li><li><a href="global.html#haeRuoatTietokannasta">haeRuoatTietokannasta</a></li><li><a href="global.html#haeTilauksetAdminPaneeliin">haeTilauksetAdminPaneeliin</a></li><li><a href="global.html#lahetaTilaus">lahetaTilaus</a></li><li><a href="global.html#laskeLoppusumma">laskeLoppusumma</a></li><li><a href="global.html#lisaaKoriin">lisaaKoriin</a></li><li><a href="global.html#logout">logout</a></li><li><a href="global.html#naytaIlmoitusModal">naytaIlmoitusModal</a></li><li><a href="global.html#naytaTilausHistoria">naytaTilausHistoria</a></li><li><a href="global.html#orderAgain">orderAgain</a></li><li><a href="global.html#paivitaKassaNakyma">paivitaKassaNakyma</a></li><li><a href="global.html#paivitaTilausStatus">paivitaTilausStatus</a></li><li><a href="global.html#poistaTuote">poistaTuote</a></li><li><a href="global.html#savePassword">savePassword</a></li><li><a href="global.html#scrollToCategory">scrollToCategory</a></li><li><a href="global.html#tallennaMuokkaukset">tallennaMuokkaukset</a></li><li><a href="global.html#tallennaUusiTuote">tallennaUusiTuote</a></li><li><a href="global.html#tilaus">tilaus</a></li><li><a href="global.html#updateCart">updateCart</a></li><li><a href="global.html#updatenNavBar">updatenNavBar</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu May 07 2026 23:39:31 GMT+0300 (Itä-Euroopan kesäaika)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
