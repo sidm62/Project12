@@ -37,7 +37,16 @@ function lisaaKoriin(id, name, price) {
 
     icon.innerHTML = "🍔";
     title.innerText = "Lisätäänkö koriin?";
-    text.innerText = `Haluatko lisätä tuotteen "${name}" ostoskoriin?`;
+
+    // Lisätään määrä-input tekstin alle
+    text.innerHTML = `
+        <p>Haluatko lisätä tuotteen "<strong>${name}</strong>" ostoskoriin?</p>
+        <div style="margin-top: 15px;">
+            <label for="modal-quantity" style="display: block; margin-bottom: 5px;">Määrä:</label>
+            <input type="number" id="modal-quantity" value="1" min="1" max="20" 
+                style="width: 60px; padding: 8px; border-radius: 5px; border: 1px solid #ff6b00; background: #222; color: white; text-align: center; font-size: 1rem;">
+        </div>
+    `;
 
     footer.innerHTML = `
         <button class="btn-cancel" onclick="closeMenuModal()">Peruuta</button>
@@ -47,20 +56,33 @@ function lisaaKoriin(id, name, price) {
     modal.style.display = "flex";
 
     document.getElementById("confirm-add-action").onclick = function() {
-        const existingProduct = ostoskori.find(item => item.name === name);
+        // Haetaan määrä input-kentästä
+        const quantityInput = document.getElementById("modal-quantity");
+        const maara = parseInt(quantityInput.value) || 1;
+
+        if (maara <= 0) return;
+
+        const existingProduct = ostoskori.find(item => item.id === id); // Käytetään mieluummin ID:tä kuin nimeä
+
         if (existingProduct) {
-            existingProduct.amount += 1;
+            existingProduct.amount += maara;
         } else {
-            ostoskori.push({ id: id, name: name, price: price, amount: 1, extra: "" });
+            ostoskori.push({
+                id: id,
+                name: name,
+                price: price,
+                amount: maara,
+                extra: ""
+            });
         }
 
         localStorage.setItem('ostoskori', JSON.stringify(ostoskori));
         updateCart();
 
-        // Muutetaan modal onnistumisilmoitukseksi
+
         icon.innerHTML = "✅";
         title.innerText = "Onnistui!";
-        text.innerText = `${name} on nyt lisätty ostoskoriin.`;
+        text.innerHTML = `<p><strong>${maara}x ${name}</strong> on nyt lisätty ostoskoriin.</p>`;
         footer.innerHTML = `<button class="btn-confirm" onclick="closeMenuModal()" style="width: 100%;">Selvä</button>`;
     };
 }

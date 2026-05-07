@@ -198,16 +198,28 @@ async function naytaTilausHistoria() {
  */
 function orderAgain(tuotteetRaw) {
     const modal = document.getElementById("menuModal");
-    // Muutetaan teksti takaisin objekteiksi
     const tuotteetArray = typeof tuotteetRaw === 'string' ? JSON.parse(tuotteetRaw) : tuotteetRaw;
 
-    document.getElementById("modal-icon").innerHTML = "🔄";
-    document.getElementById("modal-title").innerText = "Tilaa uudelleen?";
-    document.getElementById("modal-text").innerText = "Haluatko lisätä nämä tuotteet uudelleen ostoskoriin?";
+    document.getElementById("modal-icon").innerHTML = "🍔";
+    document.getElementById("modal-title").innerText = "Valitse määrät";
+
+    // Luodaan lista tuotteista ja input-kentistä
+    let tuoteListaHtml = '<div style="text-align: left; margin: 15px 0;">';
+    tuotteetArray.forEach((tuote, index) => {
+        tuoteListaHtml += `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                <span>${tuote.name}</span>
+                <input type="number" id="reorder-qty-${index}" value="${tuote.amount || 1}" min="1" max="10" 
+                       style="width: 50px; padding: 5px; border-radius: 4px; border: 1px solid #ff6b00; background: #222; color: white;">
+            </div>`;
+    });
+    tuoteListaHtml += '</div>';
+
+    document.getElementById("modal-text").innerHTML = tuoteListaHtml;
 
     document.getElementById("modal-footer").innerHTML = `
         <button class="btn-cancel" onclick="closeMenuModal()">Peruuta</button>
-        <button class="btn-confirm" id="confirm-reorder">Lisää kaikki</button>
+        <button class="btn-confirm" id="confirm-reorder">Lisää ostoskoriin</button>
     `;
 
     modal.style.display = "flex";
@@ -215,39 +227,31 @@ function orderAgain(tuotteetRaw) {
     document.getElementById("confirm-reorder").onclick = function() {
         let nykyinenKori = JSON.parse(localStorage.getItem("ostoskori")) || [];
 
-        tuotteetArray.forEach(vanhaTuote => {
-            // Käytetään niitä nimiä, joita profile.js:n naytaTilausHistoria-funktio luo (id, amount)
-            const tuoteId = vanhaTuote.id;
-            const maara = parseInt(vanhaTuote.amount || 1);
+        tuotteetArray.forEach((tuote, index) => {
+            const uusiMaara = parseInt(document.getElementById(`reorder-qty-${index}`).value);
+            const tId = tuote.id;
 
-            if (!tuoteId) {
-                console.error("Tuotteen ID puuttuu!", vanhaTuote);
-                return; // Hypätään yli jos ID:tä ei ole
-            }
+            if (!tId || isNaN(uusiMaara) || uusiMaara <= 0) return;
 
-            const loytyi = nykyinenKori.find(item => item.id === tuoteId);
-
+            const loytyi = nykyinenKori.find(item => item.id === tId);
             if (loytyi) {
-                // Päivitetään määrä
-                loytyi.amount = (parseInt(loytyi.amount) || 0) + maara;
+                loytyi.amount = (parseInt(loytyi.amount) || 0) + uusiMaara;
             } else {
-                // Lisätään uusi tuote oikeassa muodossa
                 nykyinenKori.push({
-                    id: tuoteId,
-                    name: vanhaTuote.name || "Tuote",
-                    price: vanhaTuote.price,
-                    amount: maara,
+                    id: tId,
+                    name: tuote.name,
+                    price: tuote.price,
+                    amount: uusiMaara,
                     extra: ""
                 });
             }
         });
 
-        // Tallennetaan ja päivitetään
         localStorage.setItem("ostoskori", JSON.stringify(nykyinenKori));
-
         if (typeof updateCart === 'function') updateCart();
 
-        // Ohjataan kassalle
+        // Suljetaan modaali ja ohjataan kassalle tai näytetään onnistumisviesti
+        closeMenuModal();
         window.location.href = 'Kassa.html';
     };
 }

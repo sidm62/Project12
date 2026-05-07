@@ -46,7 +46,7 @@ function muutaMaara(muutos) {
     if (!input) return;
 
     let arvo = parseInt(input.value) + muutos;
-    if (arvo < 1) arvo = 1; // Määrä ei voi olla alle yhden
+    if (arvo < 1) arvo = 1;
     input.value = arvo;
 }
 
