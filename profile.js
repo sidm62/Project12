@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     localStorage.setItem("userId", userId);
 
     try {
-        const response = await fetch(`http://localhost:3000/api/auth/user/${userId}`);
+        const response = await fetch(`/api/auth/user/${userId}`);
         if (response.ok) {
             const user = await response.json();
 
@@ -73,7 +73,7 @@ async function savePassword() {
     }
 
     try {
-        const response = await fetch(`http://localhost:3000/api/auth/change-password`, {
+        const response = await fetch(`/api/auth/change-password`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: userId, newPassword: passwordChange }),
@@ -117,7 +117,7 @@ async function naytaTilausHistoria() {
     if (!historyContainer || !uId) return;
 
     try {
-        const response = await fetch(`http://localhost:3000/api/orders/user/${uId}`);
+        const response = await fetch(`/api/orders/user/${uId}`);
         const data = await response.json();
 
         if (data.length === 0) {

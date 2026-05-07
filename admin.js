@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
  */
 async function haeRuoatAdminTaulukkoon() {
     try {
-        const response = await fetch("http://localhost:3000/api/products");
+        const response = await fetch("/api/products");
         const ruoat = await response.json();
 
         const taulukko = document.getElementById("tuotteet-lista");
@@ -68,7 +68,7 @@ async function poistaTuote(id) {
     if (!confirm("Haluatko varmasti poistaa tämän tuotteen?")) return;
 
     try {
-        const response = await fetch(`http://localhost:3000/api/products/${id}`, {
+        const response = await fetch(`/api/products/${id}`, {
             method: "DELETE"
         });
 
@@ -100,7 +100,7 @@ async function tallennaUusiTuote() {
     const uusiTuote = { name: nimi, price: parseFloat(hinta), category: kategoria, image_url: kuva };
 
     try {
-        const response = await fetch("http://localhost:3000/api/products", {
+        const response = await fetch("/api/products", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(uusiTuote)
@@ -156,7 +156,7 @@ async function tallennaMuokkaukset() {
     };
 
     try {
-        const response = await fetch(`http://localhost:3000/api/products/${id}`, {
+        const response = await fetch(`/api/products/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(paivitettyTuote)
@@ -181,7 +181,7 @@ async function tallennaMuokkaukset() {
  */
 async function haeTilauksetAdminPaneeliin() {
     try {
-        const response = await fetch("http://localhost:3000/api/orders");
+        const response = await fetch("/api/orders");
         const tilaukset = await response.json();
 
         const laatikko = document.getElementById("tilaukset-lista");
@@ -235,7 +235,7 @@ async function haeTilauksetAdminPaneeliin() {
  */
 async function paivitaTilausStatus(orderId, uusiStatus) {
     try {
-        const response = await fetch(`http://localhost:3000/api/orders/${orderId}/status`, {
+        const response = await fetch(`/api/orders/${orderId}/status`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ status: uusiStatus })

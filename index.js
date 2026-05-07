@@ -161,7 +161,7 @@ function luoAllergeenitHTML(allergeeniTeksti) {
  */
 async function haeRuoatTietokannasta() {
     try {
-        const response = await fetch("http://localhost:3000/api/products");
+        const response = await fetch("/api/products")
         const ruoat = await response.json();
         const ruokalista = document.getElementById("ruokalista");
         if (!ruokalista) return;
@@ -301,11 +301,8 @@ async function haeHSL() {
     }
 
     try {
-        const baseUrl = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') 
-        ? 'http://localhost:3000' 
-        : 'http://10.120.36.67:3000';
 
-const response = await fetch(`${baseUrl}/api/hsl`);
+        const response = await fetch(`${baseUrl}/api/hsl`);
         
         // SUOJAMUURI: Jos backend palauttaa virheen (kuten 500), heitetään virhe heti
         if (!response.ok) {
