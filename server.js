@@ -117,7 +117,7 @@ app.put('/api/auth/change-password', (req, res) => {
 app.get('/api/products', (req, res) => {
     db.query('SELECT * FROM products', (err, results) => {
         if (err) {
-            console.error("❌ SQL-VIRHE:", err);
+            console.error(" SQL-VIRHE:", err);
             return res.status(500).json({ viesti: "Tietokantavirhe", details: err.message });
         }
         res.json(results);
@@ -173,45 +173,80 @@ app.put('/api/products/:id', (req, res) => {
 app.post('/api/orders', (req, res) => {
     const { userId, total_price, tuotteet } = req.body;
 
-    if (!tuotteet || !Array.isArray(tuotteet)) {
-        return res.status(400).json({ error: "Tuotteet puuttuvat tai ne ovat väärässä muodossa" });
+    // 1. VARMISTUS: Tarkistetaan, että data ei ole tyhjää
+    if (!tuotteet || !Array.isArray(tuotteet) || tuotteet.length === 0) {
+        return res.status(400).json({ error: "Ostoskori on tyhjä" });
     }
 
-    const sqlOrder = "INSERT INTO orders (user_id, total_price) VALUES (?, ?)";
+    // 2. TILAUS PÄÄTAULUUN
+    const sqlOrder = "INSERT INTO orders (user_id, total_price, status) VALUES (?, ?, 'Vastaanotettu')";
+
     db.query(sqlOrder, [userId, total_price], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+            console.error("VIRHE orders-tauluun:", err.message);
+            return res.status(500).json({ error: err.message });
+        }
 
         const orderId = result.insertId;
-        const orderItemsData = tuotteet.map(item => [orderId, item.id, item.amount, item.price]);
 
+        // 3. DATAN MÄPPÄYS: Varmistetaan, että product_id ei ole koskaan null
+        const orderItemsData = tuotteet.map(item => {
+            // Etsitään ID:tä kaikista mahdollisista kentistä (id, product_id, productId)
+            const p_id = item.id || item.product_id || item.productId;
+
+            // Jos p_id on silti tyhjä, käytetään oletuksena 0 tai heitetään lokiin viesti
+            if (!p_id) console.warn("Varoitus: Tuotteen ID puuttuu riviltä!", item);
+
+            return [
+                orderId,
+                p_id,
+                item.amount || item.quantity || 1, // Määrä
+                item.price || 0                    // Hinta
+            ];
+        });
+
+        // 4. TALLENNUS RIVITAULUUN (KORJATTU: unit_price -> price)
+        // Huom: Jos tietokannassasi on unit_price, vaihda se takaisin alle.
         const sqlItems = "INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES ?";
-        db.query(sqlItems, [orderItemsData], (err) => {
-            if (err) return res.status(500).json({ error: err.message });
+
+        db.query(sqlItems, [orderItemsData], (errItems) => {
+            if (errItems) {
+                console.error("VIRHE order_items-tauluun:", errItems.message);
+                // Jos virhe on 'Unknown column price', vaihda yllä olevaan SQL:ään unit_price
+                return res.status(500).json({ error: errItems.message });
+            }
+
+            console.log(`✅ Tilaus #${orderId} onnistui!`);
             res.json({ message: "Tilaus onnistui!", orderId: orderId });
         });
     });
 });
-
 /**
  * Hakee kirjautuneen käyttäjän tilaushistorian.
  * @route GET /api/orders/user/:userId
  */
 app.get('/api/orders/user/:userId', (req, res) => {
     const sql = `
-    SELECT o.id AS orderId, o.created_at, o.total_price, o.status, 
-           oi.quantity, p.name, p.price
-    FROM orders o
-    JOIN order_items oi ON o.id = oi.order_id
-    JOIN products p ON oi.product_id = p.id
-    WHERE o.user_id = ?
-    ORDER BY o.created_at DESC`;
+        SELECT
+            o.id AS orderId,
+            o.created_at,
+            o.total_price,
+            o.status,
+            oi.product_id,    
+            oi.quantity,      
+            p.name,           
+            p.price           
+        FROM orders o
+                 JOIN order_items oi ON o.id = oi.order_id
+                 JOIN products p ON oi.product_id = p.id
+        WHERE o.user_id = ?
+        ORDER BY o.created_at DESC`;
 
     db.query(sql, [req.params.userId], (err, results) => {
         if (err) return res.status(500).json({ error: 'Virhe historian haussa' });
         res.json(results);
     });
 });
-
 /**
  * Hakee kaikki tilaukset ylläpitäjälle.
  * @route GET /api/orders

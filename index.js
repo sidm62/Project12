@@ -279,7 +279,7 @@ async function haeHSL() {
     }
 
     try {
-        const response = await fetch("http://localhost:3000/api/hsl");
+        const response = await fetch("http://10.120.36.67/api/hsl");
         
         // SUOJAMUURI: Jos backend palauttaa virheen (kuten 500), heitetään virhe heti
         if (!response.ok) {

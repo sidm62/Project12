@@ -170,7 +170,12 @@ async function lahetaTilaus() {
         total_price: summa,
         payment_method: maksutapa,
         delivery_method: toimitustapa,
-        tuotteet: ostoskori
+
+        tuotteet: ostoskori.map(tuote => ({
+            id: tuote.id,
+            amount: tuote.amount,
+            price: tuote.price
+        }))
     };
 
     try {

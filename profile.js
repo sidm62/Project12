@@ -198,11 +198,12 @@ async function naytaTilausHistoria() {
  */
 function orderAgain(tuotteetRaw) {
     const modal = document.getElementById("menuModal");
-    const tuotteetArray = JSON.parse(tuotteetRaw);
+    // Muutetaan teksti takaisin objekteiksi
+    const tuotteetArray = typeof tuotteetRaw === 'string' ? JSON.parse(tuotteetRaw) : tuotteetRaw;
 
     document.getElementById("modal-icon").innerHTML = "🔄";
     document.getElementById("modal-title").innerText = "Tilaa uudelleen?";
-    document.getElementById("modal-text").innerText = "Lisätäänkö kaikki tilauksen tuotteet ostoskoriin?";
+    document.getElementById("modal-text").innerText = "Haluatko lisätä nämä tuotteet uudelleen ostoskoriin?";
 
     document.getElementById("modal-footer").innerHTML = `
         <button class="btn-cancel" onclick="closeMenuModal()">Peruuta</button>
@@ -212,22 +213,44 @@ function orderAgain(tuotteetRaw) {
     modal.style.display = "flex";
 
     document.getElementById("confirm-reorder").onclick = function() {
-        let ostoskori = JSON.parse(localStorage.getItem("ostoskori")) || [];
+        let nykyinenKori = JSON.parse(localStorage.getItem("ostoskori")) || [];
 
-        tuotteetArray.forEach(oldItem => {
-            const target = ostoskori.find(item => item.id === oldItem.id);
-            if (target) {
-                target.quantity += oldItem.quantity;
+        tuotteetArray.forEach(vanhaTuote => {
+            // Käytetään niitä nimiä, joita profile.js:n naytaTilausHistoria-funktio luo (id, amount)
+            const tuoteId = vanhaTuote.id;
+            const maara = parseInt(vanhaTuote.amount || 1);
+
+            if (!tuoteId) {
+                console.error("Tuotteen ID puuttuu!", vanhaTuote);
+                return; // Hypätään yli jos ID:tä ei ole
+            }
+
+            const loytyi = nykyinenKori.find(item => item.id === tuoteId);
+
+            if (loytyi) {
+                // Päivitetään määrä
+                loytyi.amount = (parseInt(loytyi.amount) || 0) + maara;
             } else {
-                ostoskori.push({...oldItem});
+                // Lisätään uusi tuote oikeassa muodossa
+                nykyinenKori.push({
+                    id: tuoteId,
+                    name: vanhaTuote.name || "Tuote",
+                    price: vanhaTuote.price,
+                    amount: maara,
+                    extra: ""
+                });
             }
         });
 
-        localStorage.setItem("ostoskori", JSON.stringify(ostoskori));
+        // Tallennetaan ja päivitetään
+        localStorage.setItem("ostoskori", JSON.stringify(nykyinenKori));
+
+        if (typeof updateCart === 'function') updateCart();
+
+        // Ohjataan kassalle
         window.location.href = 'Kassa.html';
     };
 }
-
 /** Uloskirjautuminen */
 function logout() {
     localStorage.removeItem("userId");
