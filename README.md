@@ -28,7 +28,7 @@ Olemme rakentaneet paljon ominaisuuksia, joiden testaamiseksi pyydämme seuraama
 4. **Tilaaminen:** Mene "Menu"-välilehdelle. Lisää pari tuotetta ostoskoriin.
 5. **Kassa:** Mene ostoskoriin ja lähetä tilaus.
 6. **Omat tiedot:** Valikosta pääset profiiliisi, jonne äsken tekemäsi tilaus on nyt tallentunut.
-7. **Admin-näkymä:** Mene osoitteeseen `http://10.120.36.67/admin.html`. Täältä näet äsken tekemäsi tilauksen ja lähettämäsi palautteen ylläpitäjän silmin.
+7. **Admin-näkymä:** Mene osoitteeseen http://10.120.36.67/admin.html. Täältä näet äsken tekemäsi tilauksen ja lähettämäsi palautteen ylläpitäjän silmin.
 
 ## 5. Anna palautetta
 Kun olet testannut sovelluksen, täytäthän lyhyen palautelomakkeemme täällä: 
